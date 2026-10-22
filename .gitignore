@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+*.zip
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+.dev.vars
+
+# Cloudflare / Wrangler
+.wrangler/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local HTTPS certs
+*.pem
+*.key
+*.crt
