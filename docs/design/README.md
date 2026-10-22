@@ -1,0 +1,59 @@
+# Design
+
+Glowcatch's look, feel and rules come from the **Glowcatch design system**, built in Claude (Cowork) before any game code. The system itself is a private artifact on claude.ai. This folder is a snapshot of it, so the repo can be read and built without access to the original.
+
+| File | What it covers |
+| --- | --- |
+| [brand.md](brand.md) | Principles, voice and copy, colour, type, spacing, layout for phone and desktop, motion and sound, accessibility |
+| [gameplay.md](gameplay.md) | The round: pace curve, phases, combo and streak clock, bonus fireflies, hit testing, pausing, trust |
+| [states.md](states.md) | Screen flow, best-score handling, every edge case, and the full copy deck |
+| [components.md](components.md) | Guidelines for each component in the UI kit |
+| [tokens.json](tokens.json) | Every design token: colours (Night and High contrast), type, spacing, radius, glow, sizes, durations, easing, z-index |
+| [assets/](assets/) | The logo mark and the 1024×1024 app icon |
+
+**Snapshot:** version `1792632918-1c3e`, taken 2026-10-22.
+
+## Keeping it in sync
+
+The design system is the source. When it changes:
+
+1. Re-export the `project/` files from the design system.
+2. Replace the matching files here, keeping the snapshot note at the top of each.
+3. Update the snapshot version above.
+4. Check the [review notes](#review-notes) below. Close the ones the change resolves and add any new conflicts.
+
+Code doesn't read these files. The game gets its tokens and components from the UI kit in `apps/game`, and the rules come from `packages/shared` (see [../architecture.md](../architecture.md)). If a rule changes here, change it in `packages/shared` in the same commit.
+
+## Review notes
+
+These are the gaps and conflicts found when the snapshot was reviewed against the brief and the UI kit's code. Each needs a decision before or during the build. Decisions go in [../decisions.md](../decisions.md).
+
+### Conflicts in the system
+
+| # | Issue | Where | Proposed resolution |
+| --- | --- | --- | --- |
+| R1 | The `dur-life` token says a firefly lives 1600 ms at the start of a round, but the pace table and the kit's `CURVE` say 1900 ms. | tokens.json, gameplay.md | `CURVE` wins (it's what the code runs). Update the token to 1900 ms, or drop it, since lifetime comes from the curve. |
+| R2 | gameplay.md says the rules live in `Glowcatch.CURVE`, but the kit's type definitions don't declare `CURVE` or `PHASES` (the bundle does export them). | gameplay.md, index.d.ts | Moot once the rules move to `packages/shared` (R4). |
+| R3 | Frost and Swarm catches score combo points in the kit (`pointsFor`), but the bonus table lists only their effects. | gameplay.md | Document it: every catch except Lantern scores 1 × combo. |
+
+### The reference loop isn't replayable as written
+
+The `PlayField` demo in the kit is the reference implementation of a round. It's right for feel, but the server can't use it to replay a round:
+
+| # | Issue | Why it matters | Resolution |
+| --- | --- | --- | --- |
+| R4 | The rules live in a browser bundle (`window.Glowcatch`). | The server can't import them. | Port `CURVE`, `BONUSES`, `comboFor`, `pointsFor`, `pace` and `difficulty` to `packages/shared` as plain TypeScript. The game and the server both import them from there. |
+| R5 | The loop steps by the browser's frame time, and spawn timers reset to 0 instead of carrying the remainder. | Spawn timing depends on frame rate, so a 60 Hz phone and a 120 Hz phone play different rounds from the same seed. | The shared simulation steps at a fixed tick, and taps are applied at tick boundaries. |
+| R6 | Positions are in screen pixels. | The same seed lays out differently on every screen size. | The simulation runs in logical units for the frame size captured at round start. Rendering scales to the current frame. |
+| R7 | Spawn spacing is checked against drifted positions with `Math.sin` and `Math.hypot`. | JavaScript engines may round these differently in the last bits (Facebook's iOS webview vs V8 on the server). A tiny difference can flip a spawn decision and the replay drifts apart. | Spacing checks use base positions and plain arithmetic only. Taps are hit-tested with a small tolerance. |
+| R8 | The random generator returns one of only 10,000 values (`% 10000`). | Fine for visuals, too coarse for spawn positions. | The shared simulation uses a full-precision seeded generator. |
+
+### Gaps
+
+| # | Gap | Proposed resolution |
+| --- | --- | --- |
+| G1 | Settings is mentioned (High contrast theme, sound, reduced motion, How to play), but it has no screen in the flow and no component. | Small Settings sheet built from existing parts: Button toggles in a `.gc-panel`. Scope decision pending. |
+| G2 | "Tonight's brightest" suggests a nightly leaderboard, but the brief only asks for a top 10. | Pending: all-time or daily. |
+| G3 | No audio files. The chime "climbs a pentatonic scale". | Synthesise the chimes with the Web Audio API: no downloads, and the pitch can follow the streak. |
+| G4 | No font file (`type.fonts` is empty). | Self-host a Latin subset of Bricolage Grotesque (SIL Open Font License) as woff2, under 40 KB. |
+| G5 | The app icon is SVG; Facebook needs a 1024×1024 PNG. | Export once and add it to the repo next to the SVG. |

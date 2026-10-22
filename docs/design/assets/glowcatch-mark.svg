@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96">
+  <defs><radialGradient id="h" cx="58" cy="40" r="34" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ffc94a" stop-opacity=".45"></stop><stop offset="1" stop-color="#ffc94a" stop-opacity="0"></stop></radialGradient>
+  <radialGradient id="b" cx="58" cy="40" r="16" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fff4c7"></stop><stop offset=".45" stop-color="#fff4c7"></stop><stop offset="1" stop-color="#ffc94a"></stop></radialGradient></defs>
+  <circle cx="58" cy="40" r="34" fill="url(#h)"></circle>
+  <ellipse cx="47" cy="28" rx="9" ry="5" transform="rotate(-38 47 28)" fill="#fff4c7" opacity=".5"></ellipse>
+  <ellipse cx="69" cy="28" rx="9" ry="5" transform="rotate(38 69 28)" fill="#fff4c7" opacity=".5"></ellipse>
+  <circle cx="58" cy="40" r="16" fill="url(#b)"></circle>
+  <circle cx="34" cy="62" r="4" fill="#ffc94a" opacity=".8"></circle>
+  <circle cx="22" cy="72" r="3" fill="#ffc94a" opacity=".55"></circle>
+  <circle cx="13" cy="80" r="2" fill="#ffc94a" opacity=".35"></circle>
+</svg>
