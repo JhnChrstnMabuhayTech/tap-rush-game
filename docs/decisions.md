@@ -57,6 +57,8 @@ The Glowcatch UI kit is framework-free by design: components are `(props) => HTM
 
 **Cost:** game-loop, input and scene handling are written by hand. At this size that's a few hundred lines.
 
+**CSS ships unminified.** The kit reads design tokens at runtime, and a minifier rewrites them (`800ms` → `.8s`, `rgba()` → 8-digit hex), which broke the countdown, the catch popups and the sky's gradients in production. Minification would save about 2 KB gzipped. `scripts/check-build.ts` fails the build if any token changes.
+
 ---
 
 ### D6. The server replays every round from a seed

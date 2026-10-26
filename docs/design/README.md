@@ -35,6 +35,7 @@ These are the gaps and conflicts found when the snapshot was reviewed against th
 | R1 | The `dur-life` token says a firefly lives 1600 ms at the start of a round, but the pace table and the kit's `CURVE` say 1900 ms. | tokens.json, gameplay.md | `CURVE` wins (it's what the code runs). Update the token to 1900 ms, or drop it, since lifetime comes from the curve. |
 | R2 | gameplay.md says the rules live in `Glowcatch.CURVE`, but the kit's type definitions don't declare `CURVE` or `PHASES` (the bundle does export them). | gameplay.md, index.d.ts | **Resolved:** the rules live in `packages/shared` (R4). |
 | R3 | Frost and Swarm catches score combo points in the kit (`pointsFor`), but the bonus table lists only their effects. | gameplay.md | Document it: every catch except Lantern scores 1 × combo. |
+| R13 | The kit reads duration tokens with `parseFloat` and assumes milliseconds (`ms()`), and its gradient helper (`clear()`) only accepts 6-digit hex or `rgba()`. Any stylesheet tool that writes `.8s` or `#rrggbbaa` breaks it silently; Vite's minifier did. | bundle.js | In the game: CSS ships unminified and a build check guards the tokens. For the design system: parse units (`ms`/`s`) and every colour form. |
 
 ### The reference loop isn't replayable as written
 
