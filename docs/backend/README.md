@@ -117,7 +117,7 @@ Cloudflare Workers with a D1 (SQLite) database. It's free at this scale, served 
 
 - [x] The D1 database exists (`wrangler d1 create glowcatch`, region APAC, its ID in `wrangler.jsonc`) and is migrated (`wrangler d1 migrations apply glowcatch --remote`).
 - [x] The Worker is deployed (`pnpm --filter @glowcatch/server deploy`).
-- [ ] `APP_SECRET`, the app's App Secret from the App Dashboard, is set with `wrangler secret put APP_SECRET` (run in `apps/server`; it prompts for the value) and never committed. Until it's set, every signed request is refused with `401`.
+- [x] `APP_SECRET`, the app's App Secret from the App Dashboard, is set with `wrangler secret put APP_SECRET` (run in `apps/server`, or pass `--name glowcatch-api`; it prompts for the value) and never committed. Without it, every signed request is refused with `401`.
 - [ ] The Worker's domain, `glowcatch-api.glowcatch-server.workers.dev`, is on the Facebook app's allowed domains; an Instant Game under SDK 8.0 can only call allowed domains, over HTTPS.
 
 A new migration is applied to the live database with `pnpm --filter @glowcatch/server exec wrangler d1 migrations apply glowcatch --remote`, before deploying the code that needs it.
