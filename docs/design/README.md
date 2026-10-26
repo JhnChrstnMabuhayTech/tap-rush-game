@@ -61,6 +61,7 @@ The `PlayField` demo in the kit is the reference implementation of a round. It's
 | # | Departure | Where | Status |
 | --- | --- | --- | --- |
 | R10 | The title sits over its own interactive field, not `PlayField({ ambient: true })`: catchable fireflies, bonus visitors, a moon, and a new hint string, "Tap a firefly" (`title.hint`). | components.md (TitleScreen), states.md (Title, copy deck) | Accepted in the game ([D14](../decisions.md#d14-a-title-you-can-play-with)). To carry back into the design system: the TitleScreen guidance and the `title.hint` copy key. |
+| R11 | Achievement badges, which the design system doesn't have: a medallion (a firefly of each kind on a night disc, lit or unlit), a collection sheet, a "New badge" card on game over, a next-badge progress line, and a "Badges n/7" title button. New copy: the seven badge names, "n of 7 earned", "New badge", "Score n in a round", "Next badge: … at n", "n to go". | components.md, states.md | Accepted in the game ([D15](../decisions.md#d15-achievement-badges-for-scores-reached)). To carry back: a Badge component and the copy keys. |
 
 ### Gaps
 

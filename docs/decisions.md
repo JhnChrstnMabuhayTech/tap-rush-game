@@ -177,6 +177,34 @@ The design puts the title over the kit's ambient field: three dim fireflies, and
 
 ---
 
+### D15. Achievement badges for scores reached
+
+**Status:** Accepted
+
+Seven badges, one for each score a player reaches in a single round. They give every round a goal beyond the best score, and a reason to come back.
+
+| Badge | Score | Who it's for |
+| --- | --- | --- |
+| First light | 10 | Everyone, in their first round |
+| Spark catcher | 40 | A casual player's first few rounds |
+| Lantern keeper | 75 | A casual player at their best |
+| Night watcher | 120 | An average player |
+| Meadow glow | 170 | An average player at their best |
+| Moon catcher | 230 | A strong player |
+| Starfield | 280 | Near-perfect play |
+
+**Where the numbers come from:** 300 simulated rounds per player model, run on the shared simulation. Casual (0.9 s to react, 65% accurate) has a median of 56 and a 90th percentile of 75. Average (0.6 s, 80%) is 145 and 169. Strong (0.4 s, 92%) is 243 and 268. Perfect play is 252 and 277, with a maximum of 311. Real players will differ from the models, so the thresholds should be revisited once there are real scores.
+
+**Badges are read from the best score**, not stored on their own, so they can't disagree with it. When the best syncs with Facebook's player data or the server, the badges follow.
+
+**What each badge looks like:** a firefly of its own kind on a medallion. Earned ones glow; locked ones are a firefly whose light is nearly out. The light stays the UI, and no new colour joins the palette. New badges use lime ("better than before").
+
+**Left out on purpose:** achievements for anything other than score, such as catching three Frosts or holding ×3 for ten seconds. The request was for scores reached, and seven score badges are easy to understand at a glance.
+
+**Cost:** badges earned on the device trust the device, as the local best already does. They're cosmetic and never ranked. Once scores are verified by the server, badges can be read from the server's best instead.
+
+---
+
 ## Open questions
 
 | Question | Options | Notes |

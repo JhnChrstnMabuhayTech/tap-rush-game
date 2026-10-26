@@ -2,13 +2,15 @@
 // → game over → countdown again, or back to the title. One screen at a time.
 
 import { createSound, type Sound } from './audio/sound';
+import { badgesButton, badgesSheet, nextLine, unlockCard } from './badges/badge-view';
+import { nextBadge, unlockedBadges, type Badge } from './badges/badges';
 import type { Platform } from './platform/platform';
 import { createPlay, type Play, type RoundResult } from './round/play';
 import { createBestStore, type BestRecord } from './storage/best';
 import { createTitleField, type TitleField } from './title/title-field';
 import { kit } from './ui/kit';
 
-type Screen = 'title' | 'countdown' | 'playing' | 'paused' | 'over';
+type Screen = 'title' | 'badges' | 'countdown' | 'playing' | 'paused' | 'over';
 
 const shareText = (score: number) =>
   `I scored ${score} in 30 seconds of Glowcatch. Can you beat it?`;
@@ -46,8 +48,23 @@ export function startApp(root: HTMLElement, platform: Platform) {
     const toggle = soundToggle(sound, true);
     toggle.classList.add('gc-corner');
     menu.append(toggle);
+    // Badges sit between Play and Leaderboard.
+    const actions = menu.querySelector('.gc-title-actions');
+    actions?.insertBefore(badgesButton(best.get(), openBadges), actions.children[1] ?? null);
     title = createTitleField(root, { sound, onEager: () => menu.classList.add('is-eager') });
     title.frame.append(menu);
+  }
+
+  function openBadges() {
+    if (!title || screen !== 'title') return;
+    screen = 'badges';
+    setLayer(title, badgesSheet(best.get(), closeBadges));
+  }
+
+  function closeBadges() {
+    if (!title || screen !== 'badges') return;
+    setLayer(title, null);
+    screen = 'title';
   }
 
   function startRound() {
@@ -124,13 +141,21 @@ export function startApp(root: HTMLElement, platform: Platform) {
   function showGameOver(result: RoundResult) {
     if (!play) return;
     screen = 'over';
+    const previousBest = best.get();
     const record = best.record(result.score);
+    const unlocked = unlockedBadges(previousBest, result.score);
     sound.ambience(false);
     sound.roundEnd(record.isNewBest);
-    renderGameOver(play, result, record);
+    if (unlocked.length) navigator.vibrate?.([12, 60, 12]);
+    renderGameOver(play, result, record, unlocked);
   }
 
-  function renderGameOver(current: Play, result: RoundResult, record: BestRecord) {
+  function renderGameOver(
+    current: Play,
+    result: RoundResult,
+    record: BestRecord,
+    unlocked: readonly Badge[],
+  ) {
     const sheet = kit.GameOver({
       score: result.score,
       // The kit shows "—" for a missing best, so a first round of 0 never reads "Best 0".
@@ -141,6 +166,13 @@ export function startApp(root: HTMLElement, platform: Platform) {
       onShare: () => share(current, result.score, sheet),
       onPlayAgain: startRound,
     });
+    // A badge earned this round, or how far it is to the next one.
+    const badges = unlocked.length
+      ? unlockCard(unlocked)
+      : nextBadge(record.best)
+        ? nextLine(record.best)
+        : null;
+    if (badges) sheet.querySelector('.gc-over-actions')?.before(badges);
     setLayer(current, sheet);
   }
 
@@ -169,6 +201,7 @@ export function startApp(root: HTMLElement, platform: Platform) {
   function onKey(event: KeyboardEvent) {
     if (event.key === 'Escape') {
       if (screen === 'paused') resume();
+      else if (screen === 'badges') closeBadges();
       else pause();
       return;
     }
@@ -216,13 +249,13 @@ function soundToggle(sound: Sound, iconOnly: boolean): HTMLButtonElement {
 }
 
 /** Shows `content` over the dimmed field, or clears the layer with null. */
-function setLayer(current: Play, content: HTMLElement | null) {
-  current.frame.querySelector('.gc-layer')?.remove();
+function setLayer(host: { frame: HTMLElement }, content: HTMLElement | null) {
+  host.frame.querySelector('.gc-layer')?.remove();
   if (!content) return;
   const layer = document.createElement('div');
   layer.className = 'gc-layer';
   layer.append(content);
-  current.frame.append(layer);
+  host.frame.append(layer);
 }
 
 /** The kit's busy state for a button it already rendered: spinner, disabled. */
