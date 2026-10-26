@@ -29,6 +29,7 @@ The build order, chosen to get the riskiest unknowns out of the way first: Faceb
 - [x] Game loop, `pointerdown` input with multi-touch, hit testing with slop
 - [x] Screens: title, countdown, play, paused, game over
 - [ ] Screens: how to play, leaderboard
+- [x] Home from game over
 - [x] FBInstant mock for plain-browser development
 
 ## Phase 3: Backend and trust
