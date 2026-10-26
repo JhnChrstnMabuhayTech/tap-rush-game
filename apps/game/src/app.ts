@@ -89,7 +89,23 @@ export function startApp(root: HTMLElement, platform: Platform) {
   function startRound() {
     clear();
     play = createPlay(root, { seed: randomSeed(), sound, onPause: pause, onEnd: showGameOver });
-    countdown(play);
+    if (seenHowTo.get()) countdown(play);
+    else firstHowTo(play);
+  }
+
+  // Before a player's first round, How to play comes up over the waiting
+  // field, once; the countdown starts when it's closed.
+  function firstHowTo(current: Play) {
+    screen = 'howto';
+    setLayer(
+      current,
+      howToPlaySheet(() => {
+        seenHowTo.set();
+        if (play !== current || screen !== 'howto') return;
+        setLayer(current, null);
+        countdown(current);
+      }),
+    );
   }
 
   // 3, 2, 1, then the clock starts on "Go!". The first firefly is nearly a
