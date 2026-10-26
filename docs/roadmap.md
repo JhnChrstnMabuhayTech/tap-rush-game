@@ -26,8 +26,9 @@ The build order, chosen to get the riskiest unknowns out of the way first: Faceb
 - [x] Rules ported to `packages/shared`: curve, phases, combo, bonuses
 - [x] Deterministic simulation: seeded generator, fixed tick, logical coordinates, tap log
 - [x] Tests: same seed and taps give the same score; frame rate doesn't change the round
-- [ ] Game loop, `pointerdown` input with multi-touch, hit testing with slop
-- [ ] Screens: title, how to play, countdown, play, paused, game over, leaderboard
+- [x] Game loop, `pointerdown` input with multi-touch, hit testing with slop
+- [x] Screens: title, countdown, play, paused, game over
+- [ ] Screens: how to play, leaderboard
 - [x] FBInstant mock for plain-browser development
 
 ## Phase 3: Backend and trust
@@ -42,10 +43,11 @@ The build order, chosen to get the riskiest unknowns out of the way first: Faceb
 ## Phase 4: Facebook integration
 
 - [x] Real loading progress, `startGameAsync` when the title can render
-- [ ] Best score: `localStorage` + `FBInstant.player` data
-- [ ] Share with an image (`renderShareImage` → `shareAsync`)
+- [x] Best score on the device (`localStorage`)
+- [ ] Best score in `FBInstant.player` data, reconciled with the device
+- [x] Share with an image (`renderShareImage` → `shareAsync`)
 - [ ] Leaderboard names and photos through an overlay view ([D11](decisions.md#d11-instant-games-sdk-80-under-zero-permissions))
-- [ ] Pause on `FBInstant.onPause` and `visibilitychange`
+- [x] Pause on `FBInstant.onPause` and `visibilitychange`
 - [ ] Tested through the embedded player with a local HTTPS server
 
 ## Phase 5: Feel and polish
