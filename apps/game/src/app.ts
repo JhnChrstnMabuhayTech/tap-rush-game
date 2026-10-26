@@ -173,6 +173,10 @@ export function startApp(root: HTMLElement, platform: Platform) {
         ? nextLine(record.best)
         : null;
     if (badges) sheet.querySelector('.gc-over-actions')?.before(badges);
+    // Home, under Share and Play again: back to the title and the badges.
+    const home = kit.Button({ label: 'Home', variant: 'ghost', block: true, onClick: showTitle });
+    home.classList.add('gc-over-home');
+    sheet.querySelector('.gc-over-actions')?.append(home);
     setLayer(current, sheet);
   }
 
@@ -202,6 +206,7 @@ export function startApp(root: HTMLElement, platform: Platform) {
     if (event.key === 'Escape') {
       if (screen === 'paused') resume();
       else if (screen === 'badges') closeBadges();
+      else if (screen === 'over') showTitle();
       else pause();
       return;
     }
