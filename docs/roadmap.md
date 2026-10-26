@@ -53,7 +53,9 @@ The build order, chosen to get the riskiest unknowns out of the way first: Faceb
 ## Phase 5: Feel and polish
 
 - [ ] Title intro, catch bursts, float text, phase banners, warming sky
-- [ ] Synthesised chimes, mute toggle, haptics where supported
+- [x] Synthesised chimes, mute toggle, haptics where supported
+- [x] A quiet night ambience under the round (pad and crickets)
+- [x] An interactive title: catchable fireflies and bonus visitors
 - [ ] High contrast theme and reduced motion
 - [ ] Share card checked on Facebook's crops
 

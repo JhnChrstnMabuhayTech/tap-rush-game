@@ -56,6 +56,12 @@ The `PlayField` demo in the kit is the reference implementation of a round. It's
 | --- | --- | --- | --- |
 | R9 | SDK 8.0 gives game code no player names or photos ([D11](../decisions.md#d11-instant-games-sdk-80-under-zero-permissions)), but `Leaderboard` rows show a name and a photo (or initials), and `renderShareImage` takes a `name`. | components.md, states.md | Render leaderboard names and photos in an overlay view, styled with the tokens; keep the kit's `Leaderboard` for its loading, empty, error and offline states. Share images go out without a name. |
 
+### Deliberate departures
+
+| # | Departure | Where | Status |
+| --- | --- | --- | --- |
+| R10 | The title sits over its own interactive field, not `PlayField({ ambient: true })`: catchable fireflies, bonus visitors, a moon, and a new hint string, "Tap a firefly" (`title.hint`). | components.md (TitleScreen), states.md (Title, copy deck) | Accepted in the game ([D14](../decisions.md#d14-a-title-you-can-play-with)). To carry back into the design system: the TitleScreen guidance and the `title.hint` copy key. |
+
 ### Gaps
 
 | # | Gap | Proposed resolution |

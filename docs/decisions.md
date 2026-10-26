@@ -87,11 +87,17 @@ The backend must stay on a public HTTPS URL until the review ends. Workers is fr
 
 ---
 
-### D9. Synthesised sound
+### D9. Synthesised sound, with a quiet night ambience
 
-**Status:** Proposed
+**Status:** Accepted
 
 The catch chime climbs a pentatonic scale with the streak. Generating it with the Web Audio API means no audio files to download, and the pitch can follow the streak exactly.
+
+Everything sits in G major pentatonic, so no two sounds clash. Each catch chimes one step higher, up to two octaves; a new multiplier adds the octave and fifth; each bonus has its own figure. The last five seconds tick, and the round ends by settling back to G.
+
+**Background music: an ambience, not a tune.** The design specified sound effects only. After the first staged build had no sound at all, we chose a quiet night ambience under the round: a low G-D-B pad and occasional crickets, about 16 dB under the chimes (measured from a recording of the engine). A melodic loop was rejected: a synthesised tune under pentatonic chimes would clash and grow repetitive over many 30-second rounds.
+
+**Cost:** browsers block audio until the player touches the page, so nothing plays on the title until the first tap. iOS only counts touchend and click as that touch, so the game listens for those too.
 
 ---
 
@@ -150,6 +156,24 @@ The shared simulation follows the kit's reference loop, with these choices:
 - **Kept from the kit:** Frost leaves the bonus pool after two have been *caught*, not spawned, so a missed Frost doesn't use up a freeze; the first firefly arrives at 940 ms rather than 950, because the clock nudges the pace up before it.
 
 **Cost:** changing a rule or a curve changes how existing rounds replay. Every round records `RULES_VERSION`; a change bumps it, and the server either keeps the old version to replay rounds issued under it, or leaves those few in-flight rounds unranked.
+
+---
+
+### D14. A title you can play with
+
+**Status:** Accepted
+
+The design puts the title over the kit's ambient field: three dim fireflies, and nothing to do but press Play. On a phone that left the top half of the screen as empty sky, and the first staged build felt plain. The title now has its own field (`apps/game/src/title`):
+
+- **Catchable fireflies:** three to five glow above the name and can be caught, with the same burst and chime as a round. A streak warms the horizon, so the combo is felt before it's explained.
+- **Bonus visitors:** a Lantern, a Frost and a Swarm visit in turn, and catching one names it with the How to play copy. The title teaches the bonuses without a tutorial screen.
+- **A one-time hint:** "Tap a firefly", if nothing has been touched for 3.5 s.
+- **An eager Play:** after three catches, Play's invitation breathes faster.
+- **The moon:** a low moon balances the Sound toggle.
+
+**Why a toy rather than more decoration:** the brief rewards "feels right to play" and creativity. A home screen you can touch makes people curious about the real thing, and it teaches the mechanic in the first second.
+
+**Cost:** the title no longer follows the design system's TitleScreen guidance (review note R10), and it's another canvas loop to keep light. Nothing on the title is scored or sent anywhere.
 
 ---
 
