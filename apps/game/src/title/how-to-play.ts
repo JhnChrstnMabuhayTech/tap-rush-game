@@ -35,7 +35,11 @@ export function howToPlaySheet(onDone: () => void): HTMLElement {
 
   panel.append(heading, lead, kit.BonusLegend({ title: null }), tips, done);
   panel.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') onDone();
+    if (event.key !== 'Escape') return;
+    // Handled here: before a first round, closing starts the countdown, and the
+    // app's own Escape would pause it straight away.
+    event.stopPropagation();
+    onDone();
   });
   window.setTimeout(() => done.focus());
   return panel;

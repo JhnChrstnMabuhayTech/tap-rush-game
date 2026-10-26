@@ -12,7 +12,7 @@ apps/game/
   public/fbapp-config.json   Bundle config; Vite copies it to the root of the build
   src/
     main.ts                  Boot: platform, loading progress, then the app
-    app.ts                   The screen flow: title, countdown, play, paused, game over
+    app.ts                   The screen flow: title, how to play (before the first round), countdown, play, paused, game over
     round/                   The play screen: drives the shared Round, draws it, takes taps
       stepper.ts             Frame time → whole 10 ms ticks
       field.ts               The round's logical field, and taps mapped into it
