@@ -21,6 +21,7 @@ apps/game/
     storage/best.ts          The best score on this device
     audio/                   Synthesised sound: notes.ts (which notes), sound.ts (the engine)
     title/                   The title's interactive sky: catchable fireflies, bonus visitors, the moon
+    badges/                  Achievement badges: badges.ts (which, from the best score), badge-view.ts (how they look)
     platform/                Where the game runs: the FBInstant SDK, or a local stand-in
     ui/kit.ts                The one place the UI kit is imported
     kit/                     The vendored Glowcatch UI kit; don't edit (see its README)
@@ -35,7 +36,7 @@ apps/game/
 | Module | Job | Status |
 | --- | --- | --- |
 | Boot | `FBInstant.initializeAsync`, real loading progress, `startGameAsync` once the title can render. Outside Facebook a local stand-in replaces the SDK. | Built |
-| Screens | A state machine over the flow in [design/states.md](../design/states.md): title, how to play, countdown, play, paused, game over, leaderboard. Pause comes from the HUD button, Escape, a hidden tab or `FBInstant.onPause`, and resumes through a fresh 3-2-1. The title is a small toy: its fireflies can be caught, and bonus visitors name themselves ([D14](../decisions.md#d14-a-title-you-can-play-with)). | Built, except How to play and Leaderboard |
+| Screens | A state machine over the flow in [design/states.md](../design/states.md): title, how to play, countdown, play, paused, game over, leaderboard. Pause comes from the HUD button, Escape, a hidden tab or `FBInstant.onPause`, and resumes through a fresh 3-2-1. The title is a small toy: its fireflies can be caught, and bonus visitors name themselves ([D14](../decisions.md#d14-a-title-you-can-play-with)). Seven score badges, from the best score: a collection from the title, and a New badge card or next-badge progress on game over ([D15](../decisions.md#d15-achievement-badges-for-scores-reached)). | Built, except How to play and Leaderboard |
 | Game loop | Simulation at a fixed tick from `packages/shared`; drawing every animation frame with the kit's `drawField` and `drawFirefly`. | Built |
 | Input | One `pointerdown` handler for touch and mouse, multi-touch, coordinates converted to the simulation's logical units. | Built |
 | Audio | Chimes, ticks, round end and a night ambience, synthesised with Web Audio ([D9](../decisions.md#d9-synthesised-sound-with-a-quiet-night-ambience)); unlocked on the first gesture; a Sound toggle on the title and when paused, remembered on the device. | Built |

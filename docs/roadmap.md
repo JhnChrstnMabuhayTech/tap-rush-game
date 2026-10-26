@@ -56,6 +56,7 @@ The build order, chosen to get the riskiest unknowns out of the way first: Faceb
 - [x] Synthesised chimes, mute toggle, haptics where supported
 - [x] A quiet night ambience under the round (pad and crickets)
 - [x] An interactive title: catchable fireflies and bonus visitors
+- [x] Achievement badges for scores reached, with a collection and progress to the next
 - [ ] High contrast theme and reduced motion
 - [ ] Share card checked on Facebook's crops
 
