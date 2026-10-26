@@ -7,6 +7,8 @@ import { nextBadge, unlockedBadges, type Badge } from './badges/badges';
 import type { Platform } from './platform/platform';
 import { createPlay, type Play, type RoundResult } from './round/play';
 import { createBestStore, type BestRecord } from './storage/best';
+import { createFlag } from './storage/flag';
+import { howToPlayButton, howToPlaySheet } from './title/how-to-play';
 import { createTitleField, type TitleField } from './title/title-field';
 import { durationMs } from './ui/duration';
 import { kit } from './ui/kit';
@@ -19,8 +21,9 @@ const shareText = (score: number) =>
 
 export function startApp(root: HTMLElement, platform: Platform) {
   const best = createBestStore();
+  const seenHowTo = createFlag('glowcatch.howto');
   const sound = createSound();
-  let screen: Screen = 'title';
+  let screen: Screen | 'howto' = 'title';
   let title: TitleField | null = null;
   let play: Play | null = null;
   let countdownTimer = 0;
@@ -62,9 +65,25 @@ export function startApp(root: HTMLElement, platform: Platform) {
     // Badges sit between Play and Leaderboard.
     const actions = menu.querySelector('.gc-title-actions');
     actions?.insertBefore(badgesButton(best.get(), openBadges), actions.children[1] ?? null);
+    // How to play goes straight under Play, where a new player looks first.
+    actions?.insertBefore(howToPlayButton(openHowTo), actions.children[1] ?? null);
     title = createTitleField(root, { sound, onEager: () => menu.classList.add('is-eager') });
     title.frame.append(menu);
     sound.titleMusic(true);
+  }
+
+  function openHowTo() {
+    if (!title || screen !== 'title') return;
+    screen = 'howto';
+    setLayer(
+      title,
+      howToPlaySheet(() => {
+        seenHowTo.set();
+        if (!title || screen !== 'howto') return;
+        setLayer(title, null);
+        screen = 'title';
+      }),
+    );
   }
 
   function openBadges() {

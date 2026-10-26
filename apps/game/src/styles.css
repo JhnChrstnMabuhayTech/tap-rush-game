@@ -133,6 +133,33 @@ body {
   }
 }
 
+/* How to play: the kit's BonusLegend with a lead line and a few tips. */
+.gc-howto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-height: 100%;
+  overflow-y: auto;
+}
+
+.gc-howto-lead {
+  margin: calc(-1 * var(--space-2)) 0 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--ink-muted);
+}
+
+.gc-howto-tips {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0 0 0 var(--space-4);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ink-muted);
+}
+
 /* Badges: the collection sheet. */
 .gc-badges {
   display: flex;

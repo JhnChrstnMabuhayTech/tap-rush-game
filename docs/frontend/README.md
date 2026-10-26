@@ -18,9 +18,9 @@ apps/game/
       field.ts               The round's logical field, and taps mapped into it
       feedback.ts            Popups and phase banners for each catch and phase, as data
       play.ts                Canvas, HUD, effects layer, input
-    storage/best.ts          The best score on this device
+    storage/                 best.ts (the best score on this device), flag.ts (one-way flags, such as "has seen How to play")
     audio/                   Synthesised sound: notes.ts (which notes), sound.ts (the engine)
-    title/                   The title's interactive sky: catchable fireflies, bonus visitors, the moon
+    title/                   The title's interactive sky: catchable fireflies, bonus visitors, the moon; how-to-play.ts, the How to play sheet and its button
     badges/                  Achievement badges: badges.ts (which, from the best score), badge-view.ts (how they look)
     platform/                Where the game runs: the FBInstant SDK, or a local stand-in
     ui/kit.ts                The one place the UI kit is imported

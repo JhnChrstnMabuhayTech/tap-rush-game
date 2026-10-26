@@ -168,10 +168,11 @@ The shared simulation follows the kit's reference loop, with these choices:
 The design puts the title over the kit's ambient field: three dim fireflies, and nothing to do but press Play. On a phone that left the top half of the screen as empty sky, and the first staged build felt plain. The title now has its own field (`apps/game/src/title`):
 
 - **Catchable fireflies:** three to five glow above the name and can be caught, with the same burst and chime as a round. A streak warms the horizon, so the combo is felt before it's explained.
-- **Bonus visitors:** a Lantern, a Frost and a Swarm visit in turn, and catching one names it with the How to play copy. The title teaches the bonuses without a tutorial screen.
+- **Bonus visitors:** a Lantern, a Frost and a Swarm visit in turn, and catching one names it with the How to play copy. The title teaches the bonuses through play before anyone reads about them.
 - **A one-time hint:** "Tap a firefly", if nothing has been touched for 3.5 s.
 - **An eager Play:** after three catches, Play's invitation breathes faster.
 - **The moon:** a low moon balances the Sound toggle.
+- **How to play:** a button under Play opens the design's How to play panel at any time. The design keeps it in Settings after the first round; on the title it sits where a new player looks first.
 
 **Why a toy rather than more decoration:** the brief rewards "feels right to play" and creativity. A home screen you can touch makes people curious about the real thing, and it teaches the mechanic in the first second.
 
