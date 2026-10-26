@@ -272,6 +272,11 @@ body {
   transform-origin: left center;
 }
 
+/* Home spans the row under Share and Play again, quieter than both. */
+.gc-over-actions .gc-over-home {
+  grid-column: 1 / -1;
+}
+
 /* A taller game-over sheet still fits short screens. */
 .gc-layer > .gc-over {
   max-height: 100%;
