@@ -1,6 +1,6 @@
 # Architecture
 
-> **Status: draft.** Nothing here is built yet. This is the design the build starts from; it gets updated as code lands.
+> **Status: in progress.** All three parts are scaffolded and tested in CI (roadmap Phase 1); the round simulation, the game loop and the API come next. The [frontend](frontend/) and [backend](backend/) docs mark what's built.
 
 Glowcatch has two parts in one repo:
 

@@ -71,9 +71,10 @@ A bot that plays the real game perfectly would still replay correctly; no client
 ## Repository layout
 
 ```
-apps/game/         Instant Game client (planned)
-apps/server/       Leaderboard backend (planned)
-packages/shared/   Rules and round simulation shared by both (planned)
+apps/game/         The Instant Game: Vite, TypeScript, Canvas and the vendored UI kit
+apps/server/       The leaderboard API, a Cloudflare Worker
+packages/shared/   Rules and round simulation, imported by both apps
+.github/workflows/ CI: lint, format, type-check, test, build
 docs/              Start at docs/README.md
   architecture.md  How the parts fit together; a round end to end
   frontend/        The game: modules, running it locally and inside Facebook, uploading
@@ -83,19 +84,29 @@ docs/              Start at docs/README.md
   roadmap.md       Build order and progress
 ```
 
-## Tech stack (planned)
+## Tech stack
 
 | Part | Choice | Why |
 | --- | --- | --- |
-| Game | TypeScript, Canvas 2D, plain DOM, the Glowcatch UI kit | Small bundle, fast load inside Facebook, no engine overhead ([D5](docs/decisions.md#d5-plain-typescript-with-canvas-and-dom-no-game-engine-or-framework)) |
-| Build | Vite, pnpm workspaces | Fast dev server with HTTPS for testing in Facebook's embedded player |
+| Game | TypeScript, Canvas 2D, plain DOM, the Glowcatch UI kit, Instant Games SDK 8.0 | Small bundle, fast load inside Facebook, no engine overhead ([D5](docs/decisions.md#d5-plain-typescript-with-canvas-and-dom-no-game-engine-or-framework), [D11](docs/decisions.md#d11-instant-games-sdk-80-under-zero-permissions)) |
+| Build | Vite 8, pnpm 11 workspaces | Fast dev server with HTTPS for testing in Facebook's embedded player |
 | Backend | Cloudflare Workers + D1 (proposed) | Free, HTTPS, no cold starts, doesn't sleep during review ([D7](docs/decisions.md#d7-host-the-backend-on-cloudflare-workers-with-d1)) |
-| Tests | Vitest | Shared by all three packages |
-| CI | GitHub Actions | Lint, type-check and test on every push |
+| Language | TypeScript 6.0 | 7.0 isn't supported by typescript-eslint yet ([D12](docs/decisions.md#d12-toolchain-versions)) |
+| Tests | Vitest 4.1 | One run across all three packages ([D12](docs/decisions.md#d12-toolchain-versions)) |
+| CI | GitHub Actions | Lint, format, type-check, test and build on pushes to `main` and `development` and on every pull request |
 
 ## Getting started
 
-Setup instructions arrive with the code in Phase 1 of the [roadmap](docs/roadmap.md). You'll need Node.js 20+, pnpm, and for the backend a Cloudflare account. Testing inside Facebook needs a Meta developer account with a role on the app.
+You need Node.js 22.12 or later (`.nvmrc` pins 24) and pnpm 11 (`npm install -g pnpm@11`, or `corepack enable` on Node 24).
+
+```sh
+pnpm install
+pnpm check                                # lint, format check, type-check, test
+pnpm --filter @glowcatch/game dev         # the game on http://localhost:5173
+pnpm --filter @glowcatch/server dev       # the API on http://localhost:8787
+```
+
+In a plain browser tab the game runs with a local stand-in for the Facebook SDK. Testing inside Facebook needs a Meta developer account with a role on the app, and deploying the backend needs a Cloudflare account. Both are covered in [docs/frontend](docs/frontend/) and [docs/backend](docs/backend/).
 
 ## How this was built
 

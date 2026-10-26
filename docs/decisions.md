@@ -120,6 +120,22 @@ Meta moved Instant Games to SDK 8.0, "Network Enabled Zero Permissions" (NEZP). 
 
 ---
 
+### D12. Toolchain versions
+
+**Status:** Accepted
+
+| Tool | Version | Why not the newest |
+| --- | --- | --- |
+| Node.js | 22.12+, 24 in `.nvmrc` | Vite 8 and Wrangler 4 need 22.12; 24 is the current LTS. |
+| pnpm | 11 | It's the newest. Two of its defaults stay on: install scripts only run for packages listed under `allowBuilds` (workerd and esbuild, which Wrangler needs), and releases younger than a day aren't installed (`minimumReleaseAge`), a cheap guard against a compromised publish. |
+| TypeScript | 6.0 | typescript-eslint 8 supports TypeScript below 6.1, so 7.0 would leave linting unsupported. |
+| Vitest | 4.1 | `@cloudflare/vitest-pool-workers`, which runs tests inside the Workers runtime with a real D1, supports Vitest 4.1 only. The server's integration tests need it in Phase 3. |
+| Vite | 8 | It's the newest. |
+
+**Cost:** TypeScript and Vitest are a major version behind. Revisit when typescript-eslint and the Workers pool catch up; nothing in the code depends on the older versions.
+
+---
+
 ## Open questions
 
 | Question | Options | Notes |
