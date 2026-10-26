@@ -38,7 +38,7 @@ apps/game/
 | Screens | A state machine over the flow in [design/states.md](../design/states.md): title, how to play, countdown, play, paused, game over, leaderboard. Pause comes from the HUD button, Escape, a hidden tab or `FBInstant.onPause`, and resumes through a fresh 3-2-1. The title is a small toy: its fireflies can be caught, and bonus visitors name themselves ([D14](../decisions.md#d14-a-title-you-can-play-with)). | Built, except How to play and Leaderboard |
 | Game loop | Simulation at a fixed tick from `packages/shared`; drawing every animation frame with the kit's `drawField` and `drawFirefly`. | Built |
 | Input | One `pointerdown` handler for touch and mouse, multi-touch, coordinates converted to the simulation's logical units. | Built |
-| Audio | Chimes, ticks, round end and a night ambience, synthesised with Web Audio ([D9](../decisions.md#d9-synthesised-sound-with-a-quiet-night-ambience)); unlocked on the first gesture; a Sound toggle on the title and when paused, remembered on the device. | Built |
+| Audio | Chimes, countdown pips, ticks, round end and a night ambience, synthesised with Web Audio ([D9](../decisions.md#d9-synthesised-sound-with-a-quiet-night-ambience)); unlocked on the first gesture; a Sound toggle on the title and when paused, remembered on the device. | Built |
 | Best score | `localStorage` for an instant read, reconciled with `FBInstant.player` data; keep the higher. | On the device; Facebook player data next |
 | API client | Timeouts, a retry queue for unsent scores, offline detection. | Planned |
 | Share | `renderShareImage` → `FBInstant.shareAsync`; cancelling is not an error. | Built |

@@ -93,7 +93,7 @@ The backend must stay on a public HTTPS URL until the review ends. Workers is fr
 
 The catch chime climbs a pentatonic scale with the streak. Generating it with the Web Audio API means no audio files to download, and the pitch can follow the streak exactly.
 
-Everything sits in G major pentatonic, so no two sounds clash. Each catch chimes one step higher, up to two octaves; a new multiplier adds the octave and fifth; each bonus has its own figure. The last five seconds tick, and the round ends by settling back to G.
+Everything sits in G major pentatonic, so no two sounds clash. Each catch chimes one step higher, up to two octaves; a new multiplier adds the octave and fifth; each bonus has its own figure. The countdown pips climb D, E, G into a G strum on "Go!". The last five seconds tick, and the round ends by settling back to G.
 
 **Background music: an ambience, not a tune.** The design specified sound effects only. After the first staged build had no sound at all, we chose a quiet night ambience under the round: a low G-D-B pad and occasional crickets, about 16 dB under the chimes (measured from a recording of the engine). A melodic loop was rejected: a synthesised tune under pentatonic chimes would clash and grow repetitive over many 30-second rounds.
 
