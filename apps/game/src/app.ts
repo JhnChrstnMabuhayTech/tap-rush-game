@@ -9,8 +9,9 @@ import { createPlay, type Play, type RoundResult } from './round/play';
 import { createBestStore, type BestRecord } from './storage/best';
 import { createTitleField, type TitleField } from './title/title-field';
 import { kit } from './ui/kit';
+import { settingSwitch } from './ui/switch';
 
-type Screen = 'title' | 'badges' | 'countdown' | 'playing' | 'paused' | 'over';
+type Screen = 'title' | 'badges' | 'settings' | 'countdown' | 'playing' | 'paused' | 'over';
 
 const shareText = (score: number) =>
   `I scored ${score} in 30 seconds of Glowcatch. Can you beat it?`;
@@ -45,9 +46,14 @@ export function startApp(root: HTMLElement, platform: Platform) {
     const menu = kit.TitleScreen({ best: best.get(), onPlay: startRound });
     // Taps pass through the title to the fireflies behind it, except on its controls.
     menu.classList.add('screen', 'is-passthrough');
-    const toggle = soundToggle(sound, true);
-    toggle.classList.add('gc-corner');
-    menu.append(toggle);
+    const settings = kit.Button({
+      label: 'Settings',
+      iconOnly: true,
+      icon: 'settings',
+      onClick: openSettings,
+    });
+    settings.classList.add('gc-corner');
+    menu.append(settings);
     // Badges sit between Play and Leaderboard.
     const actions = menu.querySelector('.gc-title-actions');
     actions?.insertBefore(badgesButton(best.get(), openBadges), actions.children[1] ?? null);
@@ -63,6 +69,18 @@ export function startApp(root: HTMLElement, platform: Platform) {
 
   function closeBadges() {
     if (!title || screen !== 'badges') return;
+    setLayer(title, null);
+    screen = 'title';
+  }
+
+  function openSettings() {
+    if (!title || screen !== 'title') return;
+    screen = 'settings';
+    setLayer(title, settingsSheet(sound, closeSettings));
+  }
+
+  function closeSettings() {
+    if (!title || screen !== 'settings') return;
     setLayer(title, null);
     screen = 'title';
   }
@@ -126,7 +144,7 @@ export function startApp(root: HTMLElement, platform: Platform) {
       block: true,
       onClick: showTitle,
     });
-    panel.append(heading, resumeButton, soundToggle(sound, false), quit);
+    panel.append(heading, resumeButton, ...audioSwitches(sound), quit);
     setLayer(play, panel);
     resumeButton.focus();
   }
@@ -225,27 +243,32 @@ export function startApp(root: HTMLElement, platform: Platform) {
   }
 }
 
-/**
- * The Sound toggle: an icon button on the title, a labelled one when paused.
- * It swaps itself for a fresh button showing the new state.
- */
-function soundToggle(sound: Sound, iconOnly: boolean): HTMLButtonElement {
-  const button = kit.Button({
-    label: 'Sound',
-    iconOnly,
-    variant: 'ghost',
-    block: !iconOnly,
-    icon: sound.enabled ? 'sound-on' : 'sound-off',
-    pressed: sound.enabled,
-    onClick: () => {
-      sound.setEnabled(!sound.enabled);
-      const next = soundToggle(sound, iconOnly);
-      next.className = button.className;
-      button.replaceWith(next);
-      next.focus();
-    },
+/** Music and Sound effects, each on or off: in Settings and when paused. */
+function audioSwitches(sound: Sound): HTMLButtonElement[] {
+  return [
+    settingSwitch('Music', sound.music, (on) => sound.setMusic(on)),
+    settingSwitch('Sound effects', sound.effects, (on) => sound.setEffects(on)),
+  ];
+}
+
+/** The Settings sheet over the title. Close and Escape close it. */
+function settingsSheet(sound: Sound, onClose: () => void): HTMLElement {
+  const panel = document.createElement('div');
+  panel.className = 'gc-panel gc-settings';
+  panel.setAttribute('role', 'dialog');
+  panel.setAttribute('aria-label', 'Settings');
+  const head = document.createElement('div');
+  head.className = 'gc-settings-head';
+  const heading = document.createElement('h2');
+  heading.textContent = 'Settings';
+  const close = kit.Button({ label: 'Close', iconOnly: true, icon: 'close', onClick: onClose });
+  head.append(heading, close);
+  panel.append(head, ...audioSwitches(sound));
+  panel.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') onClose();
   });
-  return button;
+  window.setTimeout(() => close.focus());
+  return panel;
 }
 
 /** Shows `content` over the dimmed field, or clears the layer with null. */
