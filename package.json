@@ -1,0 +1,11 @@
+{
+  "name": "glowcatch",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Glowcatch: Tap Rush reimagined as a Facebook Instant Game, with its leaderboard backend.",
+  "type": "module",
+  "packageManager": "pnpm@11.24.0",
+  "engines": {
+    "node": ">=22.12"
+  }
+}

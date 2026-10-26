@@ -1,0 +1,6 @@
+# LF everywhere, so Prettier on a Windows checkout agrees with CI.
+* text=auto eol=lf
+
+*.png binary
+*.woff2 binary
+*.zip binary
