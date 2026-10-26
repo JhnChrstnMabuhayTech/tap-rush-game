@@ -1,0 +1,12 @@
+pnpm-lock.yaml
+**/dist/
+**/coverage/
+**/.wrangler/
+
+# Vendored from the Glowcatch design system; kept byte-identical to the source.
+apps/game/src/kit/
+
+# Markdown is hand-formatted, and docs/design mirrors the design system as published.
+*.md
+docs/
+.serena/
