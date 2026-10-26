@@ -6,10 +6,11 @@
   "observability": { "enabled": true },
   "d1_databases": [
     {
-      // Players and rounds; the schema is in migrations/. The database is
-      // created, and its ID added here, when the API is first deployed.
+      // Players and rounds; the schema is in migrations/. Created with
+      // `wrangler d1 create glowcatch` (region APAC).
       "binding": "DB",
       "database_name": "glowcatch",
+      "database_id": "f5d36373-6f1d-4b76-a7c7-fe84cb3d4702",
       "migrations_dir": "migrations",
     },
   ],
