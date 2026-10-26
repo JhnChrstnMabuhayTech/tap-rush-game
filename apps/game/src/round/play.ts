@@ -17,6 +17,10 @@ import { kit } from '../ui/kit';
 import { phaseBanner, popupsFor, type Popup } from './feedback';
 import { measureField, toLogical, viewOf, type View } from './field';
 import { createStepper } from './stepper';
+import type { Sound } from '../audio/sound';
+
+/** The last seconds tick, unless time is frozen. */
+const TICK_FROM_SECONDS = 5;
 
 /** After the clock hits zero, live fireflies fade out for this long before game over. */
 const END_FADE_MS = 900;
@@ -50,7 +54,12 @@ interface Burst {
 
 export function createPlay(
   container: HTMLElement,
-  options: { seed: number; onPause(): void; onEnd(result: RoundResult): void },
+  options: {
+    seed: number;
+    sound: Pick<Sound, 'catch' | 'tick'>;
+    onPause(): void;
+    onEnd(result: RoundResult): void;
+  },
 ): Play {
   const canvas = document.createElement('canvas');
   canvas.setAttribute('aria-hidden', 'true');
@@ -77,6 +86,7 @@ export function createPlay(
   let endedAt = 0;
   let finished = false;
   let heat = 0;
+  let lastTickSecond = 0;
   let bursts: Burst[] = [];
   let raf = requestAnimationFrame(frameLoop);
 
@@ -108,6 +118,7 @@ export function createPlay(
     if (running || (finished && fading)) {
       for (let ticks = stepper.advance(elapsed); ticks > 0; ticks--) onEvents(round.step(), now);
     }
+    tickLastSeconds();
     if (endedAt && !finished && now - endedAt >= END_FADE_MS) finish();
     draw(now, elapsed);
     raf = requestAnimationFrame(frameLoop);
@@ -120,9 +131,19 @@ export function createPlay(
     }
   }
 
+  // One quiet tick as each of the last five seconds begins, as the moon turns coral.
+  function tickLastSeconds() {
+    const s = round.state;
+    if (!running || s.ended || s.frozenMs > 0) return;
+    const second = Math.ceil((ROUND_MS - s.elapsedMs) / 1000);
+    if (second <= TICK_FROM_SECONDS && second !== lastTickSecond) options.sound.tick();
+    lastTickSecond = second;
+  }
+
   function onCatch(event: CatchEvent, now: number) {
     bursts.push({ firefly: event.firefly, at: now });
     for (const popup of popupsFor(event)) showPopup(popup, event.firefly);
+    options.sound.catch(event);
     navigator.vibrate?.(8);
   }
 
