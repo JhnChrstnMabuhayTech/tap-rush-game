@@ -8,3 +8,4 @@ export const RULES_VERSION = 1;
 export * from './rules';
 export * from './random';
 export * from './curves';
+export * from './simulation';
