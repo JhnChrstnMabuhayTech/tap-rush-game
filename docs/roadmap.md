@@ -27,8 +27,8 @@ The build order, chosen to get the riskiest unknowns out of the way first: Faceb
 - [x] Deterministic simulation: seeded generator, fixed tick, logical coordinates, tap log
 - [x] Tests: same seed and taps give the same score; frame rate doesn't change the round
 - [x] Game loop, `pointerdown` input with multi-touch, hit testing with slop
-- [x] Screens: title, countdown, play, paused, game over
-- [ ] Screens: how to play, leaderboard
+- [x] Screens: title, how to play, countdown, play, paused, game over
+- [ ] Screens: leaderboard
 - [x] Home from game over
 - [x] FBInstant mock for plain-browser development
 
