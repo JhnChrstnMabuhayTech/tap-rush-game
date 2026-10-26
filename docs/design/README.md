@@ -67,7 +67,7 @@ The `PlayField` demo in the kit is the reference implementation of a round. It's
 
 | # | Gap | Proposed resolution |
 | --- | --- | --- |
-| G1 | Settings is mentioned (High contrast theme, sound, reduced motion, How to play), but it has no screen in the flow and no component. | Small Settings sheet built from existing parts: Button toggles in a `.gc-panel`. Scope decision pending. |
+| G1 | Settings is mentioned (High contrast theme, sound, reduced motion, How to play), but it has no screen in the flow and no component. | **Resolved for sound** ([D16](../decisions.md#d16-music-and-sound-effects-switched-separately)): a Settings sheet from the title's corner with Music and Sound effects switches, also in the pause panel. The switch row (`gc-switch`) is a new component to carry back. High contrast, reduced motion and How to play can join it later. |
 | G2 | "Tonight's brightest" suggests a nightly leaderboard, but the brief only asks for a top 10. | Pending: all-time or daily. |
 | G3 | No audio files. The chime "climbs a pentatonic scale". | Synthesise the chimes with the Web Audio API: no downloads, and the pitch can follow the streak. |
 | G4 | No font file (`type.fonts` is empty). | Self-host a Latin subset of Bricolage Grotesque (SIL Open Font License) as woff2, under 40 KB. |
