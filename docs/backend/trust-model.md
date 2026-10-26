@@ -1,6 +1,6 @@
 # Trust model
 
-> **Status: draft.** This is the design; the checks are built in Phase 3 of the [roadmap](../roadmap.md).
+> **Status: in progress** (Phase 3 of the [roadmap](../roadmap.md)). Built: the signature check (`apps/server/src/player.ts`) and server-issued rounds (`POST /v1/rounds`). Next: score submission with the replay and plausibility checks, then rate limits.
 
 The brief asks for a backend that "only accepts scores it can trust really came from your game." This page says what that means for Glowcatch: what the server checks, what each check stops, and what it can't stop.
 
@@ -15,14 +15,14 @@ The brief asks for a backend that "only accepts scores it can trust really came 
 `FBInstant.player.getSignedPlayerInfoAsync(requestPayload)` returns a string in the form `<signature>.<payload>`, both base64url-encoded:
 
 - `payload` is JSON: `algorithm` (`HMAC-SHA256`), `issued_at`, `player_id`, `request_payload`.
-
-That's the long-standing format. SDK 8.0's reference doesn't restate it, so Phase 3 checks it against a real signature from the staged game before relying on it.
 - `signature` is the HMAC-SHA256 of the encoded payload, keyed with the app's **App Secret**.
 
-The server recomputes the HMAC and compares the two in constant time, then checks:
+That's the long-standing format. SDK 8.0's reference doesn't restate it, so it's checked against a real signature from the staged game before the game relies on the API.
+
+The server recomputes the HMAC and compares the two in constant time (Web Crypto's `verify`), then checks:
 
 - `algorithm` is `HMAC-SHA256`;
-- `issued_at` is recent (a few minutes), so an old signature can't be reused;
+- `issued_at` is at most 5 minutes old and at most 1 minute ahead of the server's clock, so an old signature can't be reused;
 - on score submission, `request_payload` equals the `roundId`, which ties the signature to this round;
 - `player_id` matches the player the round was issued to.
 
@@ -52,4 +52,9 @@ That's an honest limit, and it's the right trade-off for a casual game: it stops
 
 ## Local development
 
-Outside Facebook there's no real signature. The server accepts unsigned requests only when it runs with a development flag, which production never sets. The flag is covered by a test so it can't be switched on by accident.
+Outside Facebook there's no real signature. In its place, the game's local stand-in sends `unsigned.<payload>`: the same payload, with the word `unsigned` where the signature goes. The server accepts it only when both hold:
+
+- `ALLOW_UNSIGNED=true` is set, which only `apps/server/.dev.vars` does. That file is gitignored and `wrangler deploy` never reads it.
+- The request is to `localhost` or `127.0.0.1`. A deployed Worker is only reached through its own hostname, so even a flag set there by mistake opens nothing.
+
+Everything else about the payload is still checked (algorithm, freshness, player ID). Tests cover both conditions, and one fails if `wrangler.jsonc`, which is what deploys, ever sets the flag.

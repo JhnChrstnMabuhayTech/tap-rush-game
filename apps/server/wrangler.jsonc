@@ -4,6 +4,16 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-10-01",
   "observability": { "enabled": true },
-  // Bindings arrive with the API (roadmap Phase 3): the D1 database as DB, and
-  // the Facebook App Secret as a secret (`wrangler secret put APP_SECRET`).
+  "d1_databases": [
+    {
+      // Players and rounds; the schema is in migrations/. The database is
+      // created, and its ID added here, when the API is first deployed.
+      "binding": "DB",
+      "database_name": "glowcatch",
+      "migrations_dir": "migrations",
+    },
+  ],
+  // The Facebook App Secret is a secret, never a var here:
+  // `wrangler secret put APP_SECRET`. For local development, apps/server/.dev.vars
+  // (gitignored) sets APP_SECRET and ALLOW_UNSIGNED.
 }

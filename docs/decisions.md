@@ -73,7 +73,7 @@ The server issues a seed with each round. The client sends its tap log, and the 
 
 ### D7. Host the backend on Cloudflare Workers with D1
 
-**Status:** Proposed
+**Status:** Accepted
 
 The backend must stay on a public HTTPS URL until the review ends. Workers is free at this scale, has no cold starts and doesn't sleep. D1 (SQLite) is enough for players, rounds and a top-10 query.
 
@@ -137,10 +137,10 @@ Meta moved Instant Games to SDK 8.0, "Network Enabled Zero Permissions" (NEZP). 
 | Node.js | 22.12+, 24 in `.nvmrc` | Vite 8 and Wrangler 4 need 22.12; 24 is the current LTS. |
 | pnpm | 11 | It's the newest. Two of its defaults stay on: install scripts only run for packages listed under `allowBuilds` (workerd and esbuild, which Wrangler needs), and releases younger than a day aren't installed (`minimumReleaseAge`), a cheap guard against a compromised publish. |
 | TypeScript | 6.0 | typescript-eslint 8 supports TypeScript below 6.1, so 7.0 would leave linting unsupported. |
-| Vitest | 4.1 | `@cloudflare/vitest-pool-workers`, which runs tests inside the Workers runtime with a real D1, supports Vitest 4.1 only. The server's integration tests need it in Phase 3. |
+| Vitest | 4.1 | `@cloudflare/vitest-pool-workers`, which runs the server's tests inside the Workers runtime with a real D1, supported Vitest 4.1 only. It has since been renamed `@cloudflare/vitest-plugin`, which the server now uses, and that supports Vitest 5 as well, so this pin can be lifted in its own change. |
 | Vite | 8 | It's the newest. |
 
-**Cost:** TypeScript and Vitest are a major version behind. Revisit when typescript-eslint and the Workers pool catch up; nothing in the code depends on the older versions.
+**Cost:** TypeScript and Vitest are a major version behind. Revisit when typescript-eslint catches up, and move Vitest to 5 separately; nothing in the code depends on the older versions.
 
 ---
 
