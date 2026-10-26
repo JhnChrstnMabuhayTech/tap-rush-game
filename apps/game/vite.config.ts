@@ -11,5 +11,10 @@ export default defineConfig(({ mode }) => ({
     target: 'es2022',
     // Source maps would ship inside the upload; Meta asks for bundles without them.
     sourcemap: false,
+    // Ship CSS as written. The UI kit reads design tokens at runtime: a minifier
+    // turns "800ms" into ".8s" (read as 0.8 ms) and "rgba(…)" into 8-digit hex
+    // (which the kit's colour parsing doesn't accept). scripts/check-build.ts
+    // fails the build if any token changes. Costs about 2 KB gzipped.
+    cssMinify: false,
   },
 }));

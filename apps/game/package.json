@@ -7,8 +7,8 @@
   "scripts": {
     "dev": "vite",
     "dev:fb": "vite --mode fb",
-    "build": "vite build",
-    "bundle": "vite build && node scripts/zip.ts",
+    "build": "vite build && node scripts/check-build.ts",
+    "bundle": "vite build && node scripts/check-build.ts && node scripts/zip.ts",
     "preview": "vite preview",
     "tokens": "node scripts/build-tokens.ts",
     "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.node.json"
