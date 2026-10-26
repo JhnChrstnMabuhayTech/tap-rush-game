@@ -9,3 +9,4 @@ export * from './rules';
 export * from './random';
 export * from './curves';
 export * from './simulation';
+export type * from './api';
