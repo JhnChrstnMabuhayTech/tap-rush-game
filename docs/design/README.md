@@ -67,9 +67,10 @@ The `PlayField` demo in the kit is the reference implementation of a round. It's
 
 | # | Gap | Proposed resolution |
 | --- | --- | --- |
-| G1 | Settings is mentioned (High contrast theme, sound, reduced motion, How to play), but it has no screen in the flow and no component. | **Resolved for sound** ([D16](../decisions.md#d16-music-and-sound-effects-switched-separately)): a Settings sheet from the title's corner with Music and Sound effects switches, also in the pause panel. The switch row (`gc-switch`) is a new component to carry back. High contrast, reduced motion and How to play can join it later. |
+| G1 | Settings is mentioned (High contrast theme, sound, reduced motion, How to play), but it has no screen in the flow and no component. | **Resolved for sound** ([D16](../decisions.md#d16-music-and-sound-effects-switched-separately)): a Sound sheet from a speaker in the title's corner, with Music and Sound effects switches, also in the pause panel. The switch row (`gc-switch`) is a new component to carry back. High contrast, reduced motion and How to play can join it later. |
 | G2 | "Tonight's brightest" suggests a nightly leaderboard, but the brief only asks for a top 10. | Pending: all-time or daily. |
 | G3 | No audio files. The chime "climbs a pentatonic scale". | Synthesise the chimes with the Web Audio API: no downloads, and the pitch can follow the streak. |
 | G4 | No font file (`type.fonts` is empty). | Self-host a Latin subset of Bricolage Grotesque (SIL Open Font License) as woff2, under 40 KB. |
 | G5 | The app icon is SVG; Facebook needs a 1024×1024 PNG. | **Resolved:** `assets/glowcatch-app-icon.png`, rendered from the SVG at 1024×1024. Re-export it if the SVG changes. |
 | G6 | `bundle.css` loads the font with an `@import` from Google Fonts. Under SDK 8.0 the game may only reach allowed domains, so the request may be blocked. | Resolved together with G4: self-host the font and drop the `@import` from the game's copy of the kit. |
+| G7 | The `settings` icon (a circle with eight rays) reads as a sun, the usual sign for light/dark mode. | Draw a gear (or sliders) for `settings` in the design system. Until then the game opens its Sound sheet from the `sound-on`/`sound-off` speaker. |
