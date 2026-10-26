@@ -36,6 +36,15 @@ apps/game/
 
 Until the game loop lands, Play runs the UI kit's own reference round, so a build can be smoke-tested on Facebook.
 
+## Facebook platform constraints
+
+The game runs on Instant Games SDK 8.0 under Zero Permissions ([D11](../decisions.md#d11-instant-games-sdk-80-under-zero-permissions)):
+
+- The game never sees player names or photos. Leaderboard rows get them from an overlay view: an iframe Facebook renders from an XML template and CSS in our bundle, fed with player IDs.
+- Network requests go only to domains on the app's CSP allowlist: the backend, and nothing else. Fonts and images ship in the bundle.
+- The share image carries the score, not the player's name.
+- `fbapp-config.json` uses `NAV_BAR`, so Facebook's menu sits above the game rather than floating over the HUD. Check it on a phone in Phase 0.
+
 ## Running it
 
 All commands run from the repository root.

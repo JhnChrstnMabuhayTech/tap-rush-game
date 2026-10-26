@@ -48,6 +48,12 @@ The `PlayField` demo in the kit is the reference implementation of a round. It's
 | R7 | Spawn spacing is checked against drifted positions with `Math.sin` and `Math.hypot`. | JavaScript engines may round these differently in the last bits (Facebook's iOS webview vs V8 on the server). A tiny difference can flip a spawn decision and the replay drifts apart. | Spacing checks use base positions and plain arithmetic only. Taps are hit-tested with a small tolerance. |
 | R8 | The random generator returns one of only 10,000 values (`% 10000`). | Fine for visuals, too coarse for spawn positions. | The shared simulation uses a full-precision seeded generator. |
 
+### Conflicts with the platform
+
+| # | Issue | Where | Proposed resolution |
+| --- | --- | --- | --- |
+| R9 | SDK 8.0 gives game code no player names or photos ([D11](../decisions.md#d11-instant-games-sdk-80-under-zero-permissions)), but `Leaderboard` rows show a name and a photo (or initials), and `renderShareImage` takes a `name`. | components.md, states.md | Render leaderboard names and photos in an overlay view, styled with the tokens; keep the kit's `Leaderboard` for its loading, empty, error and offline states. Share images go out without a name. |
+
 ### Gaps
 
 | # | Gap | Proposed resolution |
@@ -57,3 +63,4 @@ The `PlayField` demo in the kit is the reference implementation of a round. It's
 | G3 | No audio files. The chime "climbs a pentatonic scale". | Synthesise the chimes with the Web Audio API: no downloads, and the pitch can follow the streak. |
 | G4 | No font file (`type.fonts` is empty). | Self-host a Latin subset of Bricolage Grotesque (SIL Open Font License) as woff2, under 40 KB. |
 | G5 | The app icon is SVG; Facebook needs a 1024×1024 PNG. | Export once and add it to the repo next to the SVG. |
+| G6 | `bundle.css` loads the font with an `@import` from Google Fonts. Under SDK 8.0 the game may only reach allowed domains, so the request may be blocked. | Resolved together with G4: self-host the font and drop the `@import` from the game's copy of the kit. |

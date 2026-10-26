@@ -103,6 +103,23 @@ Day-to-day commits go to `development`; `main` stays as the reviewed, deployable
 
 ---
 
+### D11. Instant Games SDK 8.0, under Zero Permissions
+
+**Status:** Accepted (required by Meta)
+
+Meta moved Instant Games to SDK 8.0, "Network Enabled Zero Permissions" (NEZP). Games that hadn't migrated by 30 September 2026 are no longer reachable on Facebook, so a new game has to start on 8.0. For Glowcatch that means:
+
+- **No names or photos in game code.** `player.getName()` and `getPhoto()` are gone. Meta renders names and photos itself, inside *overlay views*: an iframe built from an XML template and a CSS file in our bundle. The game positions and sizes the iframe and passes it data such as player IDs, ranks and scores, but can't read what it shows.
+- **No names or photos on our server.** Games under NEZP keep player IDs and gameplay data only, and must not try to re-identify players.
+- **Network calls go only to allowed domains,** over HTTPS. The backend's domain has to be on the app's Content Security Policy allowlist.
+- **What stays:** `getSignedPlayerInfoAsync` (now the main way to prove identity to a server), a game-scoped `player.getID()`, `getDataAsync`/`setDataAsync` (best score, D8) and `shareAsync`.
+
+**What changes from the design:** the backend stores player IDs and scores only. The leaderboard's names and photos come from an overlay view fed with player IDs from our API, and the share image drops the player's name. The design system assumed both (review note R9 in [design/README.md](design/README.md#review-notes)).
+
+**Proposed:** draw the whole top-10 list as one overlay view, styled with our tokens in its CSS, rather than one overlay per row (ten iframes). To be proven in Phase 4.
+
+---
+
 ## Open questions
 
 | Question | Options | Notes |
@@ -110,3 +127,4 @@ Day-to-day commits go to `development`; `main` stays as the reviewed, deployable
 | Is the leaderboard all-time or nightly? | All-time top 10 · reset every day | The copy "Tonight's brightest" suggests nightly; the brief only asks for a top 10. |
 | Is there a Settings screen? | Small sheet (High contrast, sound, reduced motion, How to play) · sound toggle only | The design references Settings but doesn't specify it. |
 | Should the `dur-life` token be fixed? | Set to 1900 ms · remove it | It conflicts with the pace table (review note R1). |
+| How is the leaderboard drawn under SDK 8.0? | One overlay view for the whole list · an overlay per row · names and photos left out | Names and photos can only come from an overlay view ([D11](#d11-instant-games-sdk-80-under-zero-permissions)). One overlay is lighter; how closely its XML and CSS can match the kit's `Leaderboard` is unproven. |

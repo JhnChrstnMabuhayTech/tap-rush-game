@@ -36,6 +36,7 @@ The build order, chosen to get the riskiest unknowns out of the way first: Faceb
 - [ ] Signature verification (HMAC-SHA256 with the App Secret), with tests
 - [ ] Server-side replay and plausibility checks, with tests for forged, replayed and impossible rounds
 - [ ] Rate limits, CORS for the Instant Games origin
+- [ ] Backend domain on the app's CSP allowlist (SDK 8.0)
 - [ ] Deployed to a public HTTPS URL
 
 ## Phase 4: Facebook integration
@@ -43,6 +44,7 @@ The build order, chosen to get the riskiest unknowns out of the way first: Faceb
 - [ ] Real loading progress, `startGameAsync` when the title can render
 - [ ] Best score: `localStorage` + `FBInstant.player` data
 - [ ] Share with an image (`renderShareImage` → `shareAsync`)
+- [ ] Leaderboard names and photos through an overlay view ([D11](decisions.md#d11-instant-games-sdk-80-under-zero-permissions))
 - [ ] Pause on `FBInstant.onPause` and `visibilitychange`
 - [ ] Tested through the embedded player with a local HTTPS server
 

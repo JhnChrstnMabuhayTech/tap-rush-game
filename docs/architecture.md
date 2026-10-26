@@ -45,7 +45,7 @@ sequenceDiagram
   P->>G: Play
   G->>FB: getSignedPlayerInfoAsync()
   FB-->>G: signature
-  G->>API: POST /v1/rounds (signature, name, photo, field size)
+  G->>API: POST /v1/rounds (signature, field size)
   Note over G: 3-2-1-Go runs while this request is in flight
   API-->>G: roundId, seed, rulesVersion
   loop 30 s of play
@@ -59,7 +59,9 @@ sequenceDiagram
   API->>API: verify, replay the round, compute the score
   API-->>G: ranked or unranked, score, best, rank
   G->>API: GET /v1/leaderboard
-  API-->>G: top 10 and the player's own row
+  API-->>G: top 10 and the player's own row (IDs, ranks, scores)
+  G->>FB: overlay view of the rows
+  FB-->>P: names and photos, drawn by Facebook
 ```
 
 If the round can't be started (offline, server down), the game still plays from a local random seed. The score is kept on the device and game over says "Score not ranked this round." Play is never blocked by the network.
