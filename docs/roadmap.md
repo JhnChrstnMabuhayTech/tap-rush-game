@@ -55,6 +55,7 @@ The build order, chosen to get the riskiest unknowns out of the way first: Faceb
 - [ ] Title intro, catch bursts, float text, phase banners, warming sky
 - [x] Synthesised chimes, mute toggle, haptics where supported
 - [x] A quiet night ambience under the round (pad and crickets)
+- [x] An interactive title: catchable fireflies and bonus visitors
 - [ ] High contrast theme and reduced motion
 - [ ] Share card checked on Facebook's crops
 
