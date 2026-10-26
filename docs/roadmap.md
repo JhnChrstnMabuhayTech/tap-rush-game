@@ -55,6 +55,7 @@ The build order, chosen to get the riskiest unknowns out of the way first: Faceb
 
 - [ ] Title intro, catch bursts, float text, phase banners, warming sky
 - [x] Synthesised chimes, mute toggle, haptics where supported
+- [x] Catch melodies: six tunes, a new one each streak
 - [x] A quiet night ambience under the round (pad and crickets)
 - [x] An interactive title: catchable fireflies and bonus visitors
 - [x] Achievement badges for scores reached, with a collection and progress to the next

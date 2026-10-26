@@ -6,7 +6,16 @@
 // call is silent. The mute setting is remembered on the device.
 
 import type { CatchEvent } from '@glowcatch/shared';
-import { chimeFor, comboUpNotes, countdownPip, GO_CHORD, noteAbove, PAD_NOTES } from './notes';
+import {
+  comboUpNotes,
+  countdownPip,
+  GO_CHORD,
+  melodyStep,
+  nextMelody,
+  noteAbove,
+  PAD_NOTES,
+  pentatonicUp,
+} from './notes';
 
 const KEY = 'glowcatch.sound';
 const AMBIENT_FADE_IN = 1.5;
@@ -54,6 +63,7 @@ export function createSound(
   let graph: Graph | null = null;
   let wantAmbience = false;
   let stopAmbience: (() => void) | null = null;
+  let melody = -1; // the tune the current streak is playing
 
   const sound: Sound = {
     get enabled() {
@@ -88,12 +98,17 @@ export function createSound(
       if (!graph) return;
       const { ctx, effects } = graph;
       const t = ctx.currentTime;
-      const note = chimeFor(event.streak);
+      // A new streak starts a new tune; each catch in a row plays its next note.
+      if (event.streak <= 1 || melody < 0) melody = nextMelody(melody, Math.random);
+      const step = melodyStep(melody, event.streak, event.combo);
+      const note = noteAbove(step);
       const kind = event.firefly.kind;
 
+      // At ×3 a soft octave below fills the tune out.
+      if (event.combo >= 3) chime(ctx, effects, note / 2, t, 0.06);
       if (kind === 'lantern') {
         chime(ctx, effects, note, t, 0.16);
-        chime(ctx, effects, note * 1.5, t + 0.07, 0.12);
+        chime(ctx, effects, noteAbove(pentatonicUp(step, 3)), t + 0.07, 0.12);
       } else if (kind === 'frost') {
         chime(ctx, effects, note, t, 0.14);
         // An icy glint that slides down, like frost settling.
@@ -104,15 +119,17 @@ export function createSound(
           glideTo: note * 2,
         });
       } else if (kind === 'swarm') {
-        [1, 1.25, 1.5].forEach((ratio, i) => chime(ctx, effects, note * ratio, t + i * 0.05, 0.11));
+        [0, 2, 4].forEach((up, i) =>
+          chime(ctx, effects, noteAbove(pentatonicUp(step, up)), t + i * 0.05, 0.11),
+        );
       } else {
         chime(ctx, effects, note, t, kind === 'swarm-mote' ? 0.1 : 0.15);
       }
 
       if (event.comboUp) {
-        const [octave, fifth] = comboUpNotes(event.streak);
-        chime(ctx, effects, octave, t + 0.09, 0.1);
-        chime(ctx, effects, fifth, t + 0.18, 0.08);
+        const [first, second] = comboUpNotes(event.combo);
+        chime(ctx, effects, first, t + 0.09, 0.1);
+        chime(ctx, effects, second, t + 0.18, 0.08);
       }
     },
 

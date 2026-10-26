@@ -91,9 +91,9 @@ The backend must stay on a public HTTPS URL until the review ends. Workers is fr
 
 **Status:** Accepted
 
-The catch chime climbs a pentatonic scale with the streak. Generating it with the Web Audio API means no audio files to download, and the pitch can follow the streak exactly.
+Each catch chimes the next note of a short tune, and a broken streak starts a different one. (The design had the chime climb a pentatonic ladder, which repeated the same do-re-mi every streak.) Generating the sound with the Web Audio API means no audio files to download, and the notes can follow the streak exactly.
 
-Everything sits in G major pentatonic, so no two sounds clash. Each catch chimes one step higher, up to two octaves; a new multiplier adds the octave and fifth; each bonus has its own figure. The countdown pips climb D, E, G into a G strum on "Go!". The last five seconds tick, and the round ends by settling back to G.
+Everything sits in G major pentatonic, so no two sounds clash. There are six original twelve-note tunes, written to loop; a new streak never repeats the last one. From ×2 the tune plays an octave higher, and at ×3 a soft octave below joins it, so a streak still sounds like it's building. A new multiplier rings D-G or G-B above it, and each bonus has its own figure, built by stepping up the scale rather than by fixed ratios, which would leave the key. The countdown pips climb D, E, G into a G strum on "Go!". The last five seconds tick, and the round ends by settling back to G.
 
 **Background music: an ambience, not a tune.** The design specified sound effects only. After the first staged build had no sound at all, we chose a quiet night ambience under the round: a low G-D-B pad and occasional crickets, about 16 dB under the chimes (measured from a recording of the engine). A melodic loop was rejected: a synthesised tune under pentatonic chimes would clash and grow repetitive over many 30-second rounds.
 
