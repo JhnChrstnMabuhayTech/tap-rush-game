@@ -9,6 +9,7 @@
     "dev:fb": "vite --mode fb",
     "build": "vite build",
     "preview": "vite preview",
+    "tokens": "node scripts/build-tokens.ts",
     "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.node.json"
   },
   "dependencies": {

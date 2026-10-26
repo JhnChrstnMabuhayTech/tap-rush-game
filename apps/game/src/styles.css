@@ -11,3 +11,10 @@ body {
   overflow: hidden;
   overscroll-behavior: none;
 }
+
+/* A screen laid over the play field, such as the title. */
+.gc-frame > .screen {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-hud);
+}
