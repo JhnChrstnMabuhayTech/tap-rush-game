@@ -37,3 +37,41 @@ body {
   top: calc(var(--space-4) + env(safe-area-inset-top, 0px));
   right: var(--space-4);
 }
+
+/* The title lets taps through to the fireflies behind it, except on its controls. */
+.gc-frame > .screen.is-passthrough {
+  pointer-events: none;
+}
+
+.gc-frame > .screen.is-passthrough :is(button, a) {
+  pointer-events: auto;
+}
+
+/* After a few catches on the title, Play invites more eagerly. */
+.gc-title.is-eager .gc-btn-primary {
+  animation-duration: 1.2s;
+}
+
+/* Title labels are sentences to read, so they linger longer than catch popups. */
+.gc-hint {
+  animation: gc-hint 2600ms var(--ease-out) both;
+}
+
+@keyframes gc-hint {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -30%);
+  }
+  12% {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+  80% {
+    opacity: 1;
+    transform: translate(-50%, -62%);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -80%);
+  }
+}

@@ -5,6 +5,7 @@ import { createSound, type Sound } from './audio/sound';
 import type { Platform } from './platform/platform';
 import { createPlay, type Play, type RoundResult } from './round/play';
 import { createBestStore, type BestRecord } from './storage/best';
+import { createTitleField, type TitleField } from './title/title-field';
 import { kit } from './ui/kit';
 
 type Screen = 'title' | 'countdown' | 'playing' | 'paused' | 'over';
@@ -16,7 +17,7 @@ export function startApp(root: HTMLElement, platform: Platform) {
   const best = createBestStore();
   const sound = createSound();
   let screen: Screen = 'title';
-  let title: ReturnType<typeof kit.PlayField> | null = null;
+  let title: TitleField | null = null;
   let play: Play | null = null;
   let countdownTimer = 0;
 
@@ -31,7 +32,7 @@ export function startApp(root: HTMLElement, platform: Platform) {
     window.addEventListener(type, () => sound.unlock(), { capture: true, passive: true });
   }
   if (import.meta.env.DEV) {
-    Object.assign(window, { glowcatch: { current: () => play, sound } });
+    Object.assign(window, { glowcatch: { current: () => play, title: () => title, sound } });
   }
 
   showTitle();
@@ -39,14 +40,14 @@ export function startApp(root: HTMLElement, platform: Platform) {
   function showTitle() {
     clear();
     screen = 'title';
-    title = kit.PlayField({ ambient: true });
     const menu = kit.TitleScreen({ best: best.get(), onPlay: startRound });
-    menu.classList.add('screen');
+    // Taps pass through the title to the fireflies behind it, except on its controls.
+    menu.classList.add('screen', 'is-passthrough');
     const toggle = soundToggle(sound, true);
     toggle.classList.add('gc-corner');
     menu.append(toggle);
-    title.append(menu);
-    root.replaceChildren(title);
+    title = createTitleField(root, { sound, onEager: () => menu.classList.add('is-eager') });
+    title.frame.append(menu);
   }
 
   function startRound() {
