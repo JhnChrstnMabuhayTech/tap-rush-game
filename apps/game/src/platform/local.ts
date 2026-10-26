@@ -10,5 +10,10 @@ export function localPlatform(): Platform {
     },
     setLoadingProgress: () => {},
     start: async () => {},
+    // The page's own visibilitychange handler covers switching tabs.
+    onPause: () => {},
+    share: async ({ image, text }) => {
+      console.info(`Glowcatch: would share "${text}" with an image of ${image.length} characters.`);
+    },
   };
 }

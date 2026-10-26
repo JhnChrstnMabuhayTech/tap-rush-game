@@ -18,3 +18,15 @@ body {
   inset: 0;
   z-index: var(--z-hud);
 }
+
+/* The pause panel: the kit's panel and buttons, stacked. */
+.gc-pause {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  text-align: center;
+}
+
+.gc-pause h2 {
+  margin-bottom: var(--space-3);
+}

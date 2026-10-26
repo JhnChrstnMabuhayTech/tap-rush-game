@@ -11,7 +11,14 @@ apps/game/
   index.html                 Loads the Instant Games SDK (pinned to 8.0), then src/main.ts
   public/fbapp-config.json   Bundle config; Vite copies it to the root of the build
   src/
-    main.ts                  Boot: platform, loading progress, then the title
+    main.ts                  Boot: platform, loading progress, then the app
+    app.ts                   The screen flow: title, countdown, play, paused, game over
+    round/                   The play screen: drives the shared Round, draws it, takes taps
+      stepper.ts             Frame time → whole 10 ms ticks
+      field.ts               The round's logical field, and taps mapped into it
+      feedback.ts            Popups and phase banners for each catch and phase, as data
+      play.ts                Canvas, HUD, effects layer, input
+    storage/best.ts          The best score on this device
     platform/                Where the game runs: the FBInstant SDK, or a local stand-in
     ui/kit.ts                The one place the UI kit is imported
     kit/                     The vendored Glowcatch UI kit; don't edit (see its README)
@@ -26,15 +33,17 @@ apps/game/
 | Module | Job | Status |
 | --- | --- | --- |
 | Boot | `FBInstant.initializeAsync`, real loading progress, `startGameAsync` once the title can render. Outside Facebook a local stand-in replaces the SDK. | Built |
-| Screens | A state machine over the flow in [design/states.md](../design/states.md): title, how to play, countdown, play, paused, game over, leaderboard. | Title only |
-| Game loop | Simulation at a fixed tick from `packages/shared`; drawing every animation frame with the kit's `drawField` and `drawFirefly`. | Planned |
-| Input | One `pointerdown` handler for touch and mouse, multi-touch, coordinates converted to the simulation's logical units. | Planned |
+| Screens | A state machine over the flow in [design/states.md](../design/states.md): title, how to play, countdown, play, paused, game over, leaderboard. Pause comes from the HUD button, Escape, a hidden tab or `FBInstant.onPause`, and resumes through a fresh 3-2-1. | Built, except How to play and Leaderboard |
+| Game loop | Simulation at a fixed tick from `packages/shared`; drawing every animation frame with the kit's `drawField` and `drawFirefly`. | Built |
+| Input | One `pointerdown` handler for touch and mouse, multi-touch, coordinates converted to the simulation's logical units. | Built |
 | Audio | Chimes synthesised with Web Audio, unlocked on the first tap, mute remembered. | Planned |
-| Best score | `localStorage` for an instant read, reconciled with `FBInstant.player` data; keep the higher. | Planned |
+| Best score | `localStorage` for an instant read, reconciled with `FBInstant.player` data; keep the higher. | On the device; Facebook player data next |
 | API client | Timeouts, a retry queue for unsent scores, offline detection. | Planned |
-| Share | `renderShareImage` → `FBInstant.shareAsync`; cancelling is not an error. | Planned |
+| Share | `renderShareImage` → `FBInstant.shareAsync`; cancelling is not an error. | Built |
 
-Until the game loop lands, Play runs the UI kit's own reference round, so a build can be smoke-tested on Facebook.
+Until the server issues rounds (roadmap Phase 3), each round gets a local seed and its score stays on the device.
+
+**Checking it in a browser:** dev builds expose `window.glowcatch.current()`, the live round, so a script can find fireflies and tap them. Production builds leave it out.
 
 ## Facebook platform constraints
 

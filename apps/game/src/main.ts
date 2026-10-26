@@ -1,6 +1,6 @@
+import { startApp } from './app';
 import { detectPlatform } from './platform/platform';
 import './styles.css';
-import { kit } from './ui/kit';
 
 const app = document.querySelector<HTMLDivElement>('#app');
 if (!app) throw new Error('index.html has no #app element');
@@ -29,22 +29,7 @@ async function boot() {
   platform.setLoadingProgress(100);
 
   await platform.start();
-  showTitle();
-}
-
-function showTitle() {
-  const field = kit.PlayField({ ambient: true });
-  const title = kit.TitleScreen({ onPlay: () => showRound(field) });
-  title.classList.add('screen');
-  field.append(title);
-  root.replaceChildren(field);
-}
-
-// Placeholder until the game loop lands (roadmap Phase 2): Play runs the UI
-// kit's reference round, so a build can be smoke-tested on Facebook now.
-function showRound(title: ReturnType<typeof kit.PlayField>) {
-  title.stop();
-  root.replaceChildren(kit.PlayField());
+  startApp(root, platform);
 }
 
 function delay(ms: number) {
