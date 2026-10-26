@@ -4,10 +4,10 @@ The build order, chosen to get the riskiest unknowns out of the way first: Faceb
 
 ## Phase 0: Prove the Facebook pipeline
 
-- [ ] Meta developer account and a Facebook app with the Instant Games product
-- [ ] App details filled in (name, category, icon from [design/assets](design/assets/))
+- [x] Meta developer account and a Facebook app with the Instant Games product (app ID `1377676130860334`)
+- [x] App details filled in (name, category, icon from [design/assets](design/assets/))
 - [x] A "hello world" bundle (`index.html` + `fbapp-config.json`) that initialises the SDK and starts the game: `pnpm --filter @glowcatch/game bundle`
-- [ ] Zipped with `index.html` at the root, uploaded under Web Hosting, moved to **Testing** (never Production)
+- [x] Zipped with `index.html` at the root, uploaded under Web Hosting, moved to **Testing** (never Production)
 - [ ] Loads at `facebook.com/gaming/play/<APP_ID>/` on desktop and in the Facebook app on a phone
 - [ ] Reviewers added as **Testers** under App Roles. A staged game only loads for people with a role on the app.
 

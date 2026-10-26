@@ -59,11 +59,13 @@ All commands run from the repository root.
 
 **Which platform:** in a top-level browser tab the game uses the local stand-in; inside Facebook's iframe it uses the real SDK. Add `?platform=local` or `?platform=facebook` to override.
 
-**Inside Facebook, from your machine:** run `dev:fb`, open https://localhost:5173 once and accept the certificate, then open `https://www.facebook.com/embed/instantgames/<APP_ID>/player?game_url=https://localhost:5173`. You need a role on the app (admin, developer or tester).
+**Inside Facebook, from your machine:** run `dev:fb`, open https://localhost:5173 once and accept the certificate, then open `https://www.facebook.com/embed/instantgames/1377676130860334/player?game_url=https://localhost:5173`. You need a role on the app (admin, developer or tester).
+
+**The app:** ID `1377676130860334`, play link https://www.facebook.com/gaming/play/1377676130860334/. The App Secret belongs only in the Worker's secrets (`wrangler secret put APP_SECRET`), never in the repo, a committed file or chat.
 
 ## Uploading a build
 
 1. `pnpm --filter @glowcatch/game bundle`. The zip has `index.html` and `fbapp-config.json` at its root, which Web Hosting requires.
-2. In the App Dashboard, open **Instant Games → Web Hosting** and upload the zip.
+2. In the App Dashboard, open **Use cases → Launch an Instant Game on Facebook and Messenger → Customize → Web hosting**, click **Upload Version** and pick the zip. Start the version comment with the commit the build came from (it's in the zip's name), then what changed: `30c683c: first build. Title screen + placeholder round`.
 3. Click the beaker icon on the new version (**Stage for testing**). Only people with a role on the app can play it.
 4. **Never** click the rocket icon (**Push to production**). The brief is for a staged game only.
