@@ -33,12 +33,14 @@ These are the gaps and conflicts found when the snapshot was reviewed against th
 | # | Issue | Where | Proposed resolution |
 | --- | --- | --- | --- |
 | R1 | The `dur-life` token says a firefly lives 1600 ms at the start of a round, but the pace table and the kit's `CURVE` say 1900 ms. | tokens.json, gameplay.md | `CURVE` wins (it's what the code runs). Update the token to 1900 ms, or drop it, since lifetime comes from the curve. |
-| R2 | gameplay.md says the rules live in `Glowcatch.CURVE`, but the kit's type definitions don't declare `CURVE` or `PHASES` (the bundle does export them). | gameplay.md, index.d.ts | Moot once the rules move to `packages/shared` (R4). |
+| R2 | gameplay.md says the rules live in `Glowcatch.CURVE`, but the kit's type definitions don't declare `CURVE` or `PHASES` (the bundle does export them). | gameplay.md, index.d.ts | **Resolved:** the rules live in `packages/shared` (R4). |
 | R3 | Frost and Swarm catches score combo points in the kit (`pointsFor`), but the bonus table lists only their effects. | gameplay.md | Document it: every catch except Lantern scores 1 × combo. |
 
 ### The reference loop isn't replayable as written
 
-The `PlayField` demo in the kit is the reference implementation of a round. It's right for feel, but the server can't use it to replay a round:
+The `PlayField` demo in the kit is the reference implementation of a round. It's right for feel, but the server can't use it to replay a round.
+
+**Resolved:** `packages/shared` ports the rules and runs the round as a deterministic simulation, applying each resolution below ([D13](../decisions.md#d13-how-the-simulation-stays-replayable)). A test in `apps/game` fails if the kit's copy of the rules drifts from it.
 
 | # | Issue | Why it matters | Resolution |
 | --- | --- | --- | --- |
@@ -47,6 +49,12 @@ The `PlayField` demo in the kit is the reference implementation of a round. It's
 | R6 | Positions are in screen pixels. | The same seed lays out differently on every screen size. | The simulation runs in logical units for the frame size captured at round start. Rendering scales to the current frame. |
 | R7 | Spawn spacing is checked against drifted positions with `Math.sin` and `Math.hypot`. | JavaScript engines may round these differently in the last bits (Facebook's iOS webview vs V8 on the server). A tiny difference can flip a spawn decision and the replay drifts apart. | Spacing checks use base positions and plain arithmetic only. Taps are hit-tested with a small tolerance. |
 | R8 | The random generator returns one of only 10,000 values (`% 10000`). | Fine for visuals, too coarse for spawn positions. | The shared simulation uses a full-precision seeded generator. |
+
+### Conflicts with the platform
+
+| # | Issue | Where | Proposed resolution |
+| --- | --- | --- | --- |
+| R9 | SDK 8.0 gives game code no player names or photos ([D11](../decisions.md#d11-instant-games-sdk-80-under-zero-permissions)), but `Leaderboard` rows show a name and a photo (or initials), and `renderShareImage` takes a `name`. | components.md, states.md | Render leaderboard names and photos in an overlay view, styled with the tokens; keep the kit's `Leaderboard` for its loading, empty, error and offline states. Share images go out without a name. |
 
 ### Gaps
 
@@ -57,3 +65,4 @@ The `PlayField` demo in the kit is the reference implementation of a round. It's
 | G3 | No audio files. The chime "climbs a pentatonic scale". | Synthesise the chimes with the Web Audio API: no downloads, and the pitch can follow the streak. |
 | G4 | No font file (`type.fonts` is empty). | Self-host a Latin subset of Bricolage Grotesque (SIL Open Font License) as woff2, under 40 KB. |
 | G5 | The app icon is SVG; Facebook needs a 1024×1024 PNG. | Export once and add it to the repo next to the SVG. |
+| G6 | `bundle.css` loads the font with an `@import` from Google Fonts. Under SDK 8.0 the game may only reach allowed domains, so the request may be blocked. | Resolved together with G4: self-host the font and drop the `@import` from the game's copy of the kit. |

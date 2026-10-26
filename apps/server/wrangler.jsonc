@@ -1,0 +1,9 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "glowcatch-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  "observability": { "enabled": true },
+  // Bindings arrive with the API (roadmap Phase 3): the D1 database as DB, and
+  // the Facebook App Secret as a secret (`wrangler secret put APP_SECRET`).
+}

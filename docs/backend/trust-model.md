@@ -1,6 +1,6 @@
 # Trust model
 
-> **Status: draft.** This is the design; the checks are built in Phase 3 of the [roadmap](roadmap.md).
+> **Status: draft.** This is the design; the checks are built in Phase 3 of the [roadmap](../roadmap.md).
 
 The brief asks for a backend that "only accepts scores it can trust really came from your game." This page says what that means for Glowcatch: what the server checks, what each check stops, and what it can't stop.
 
@@ -15,6 +15,8 @@ The brief asks for a backend that "only accepts scores it can trust really came 
 `FBInstant.player.getSignedPlayerInfoAsync(requestPayload)` returns a string in the form `<signature>.<payload>`, both base64url-encoded:
 
 - `payload` is JSON: `algorithm` (`HMAC-SHA256`), `issued_at`, `player_id`, `request_payload`.
+
+That's the long-standing format. SDK 8.0's reference doesn't restate it, so Phase 3 checks it against a real signature from the staged game before relying on it.
 - `signature` is the HMAC-SHA256 of the encoded payload, keyed with the app's **App Secret**.
 
 The server recomputes the HMAC and compares the two in constant time, then checks:
@@ -37,7 +39,7 @@ The App Secret lives only on the server (a Worker secret). It's never in the gam
 | Submitting faster than a real round | The server checks the wall-clock time between issuing the round and receiving the score against the round's minimum length (30 s of play; Frost can stretch it). |
 | Forcing a favourable seed | The server chooses the seed. It isn't sent until the round starts, and a new round means a new seed. |
 | Flooding the API | Rate limits per player and per IP; at most one open round per player. |
-| Faking a display name | Names and photos aren't in the signed payload, so a player could only change how their own row looks. Names are length-limited and stripped of control characters. |
+| Faking a display name or photo | Nothing to fake: the server stores only player IDs, and Facebook draws each name and photo from the ID (SDK 8.0, [D11](../decisions.md#d11-instant-games-sdk-80-under-zero-permissions)). |
 
 ## What this doesn't stop
 

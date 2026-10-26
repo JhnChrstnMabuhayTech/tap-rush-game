@@ -38,7 +38,7 @@ Full rules: [docs/design/gameplay.md](docs/design/gameplay.md).
 | Best score kept between sessions | Saved on the device and in the player's Facebook game data, reconciled on launch ([D8](docs/decisions.md#d8-best-score-in-three-places)). |
 | Design matters; rename and theme it | A complete design system: night palette, one typeface, glow instead of shadow, an animated title, a High contrast theme. |
 | Creativity, keeping the core gameplay | Score-driven pace, combos and bonus fireflies on top of an unchanged appear-shrink-tap loop. |
-| A backend that only accepts scores it can trust | Facebook-signed player identity, server-issued rounds, and a server-side replay of every round from its seed ([trust model](docs/trust-model.md)). |
+| A backend that only accepts scores it can trust | Facebook-signed player identity, server-issued rounds, and a server-side replay of every round from its seed ([trust model](docs/backend/trust-model.md)). |
 | Runs on Facebook, staged for testing only | Uploaded to Instant Games Web Hosting and moved to Testing. Never pushed to Production or submitted for review. |
 | Game and backend in one repository | `apps/game`, `apps/server` and `packages/shared` in one pnpm workspace. |
 
@@ -66,35 +66,47 @@ The game and the server import the same rules and round simulation. That's what 
 2. **Which round.** The server issues each round with its own ID and random seed. A score is only accepted for a round the server issued to that player, once, within its time limit.
 3. **What happened.** The client sends its taps, not just a score. The server replays the round from the seed with the same rules code and works out the score itself. A score the replay can't reproduce isn't ranked.
 
-A bot that plays the real game perfectly would still replay correctly; no client-side game can fully stop that. Plausibility checks (reaction time, tap rate) and stored tap logs make it harder and visible. Every threat and check: [docs/trust-model.md](docs/trust-model.md).
+A bot that plays the real game perfectly would still replay correctly; no client-side game can fully stop that. Plausibility checks (reaction time, tap rate) and stored tap logs make it harder and visible. Every threat and check: [docs/backend/trust-model.md](docs/backend/trust-model.md).
 
 ## Repository layout
 
 ```
-apps/game/         Instant Game client (planned)
-apps/server/       Leaderboard backend (planned)
-packages/shared/   Rules and round simulation shared by both (planned)
-docs/
-  design/          Design system snapshot: brand, gameplay, states, components, tokens, logos
+apps/game/         The Instant Game: Vite, TypeScript, Canvas and the vendored UI kit
+apps/server/       The leaderboard API, a Cloudflare Worker
+packages/shared/   Rules and round simulation, imported by both apps
+.github/workflows/ CI: lint, format, type-check, test, build
+docs/              Start at docs/README.md
   architecture.md  How the parts fit together; a round end to end
-  trust-model.md   What the backend checks, and what it can't stop
+  frontend/        The game: modules, running it locally and inside Facebook, uploading
+  backend/         The server: endpoints, data, hosting, deploying; the trust model
+  design/          Design system snapshot: brand, gameplay, states, components, tokens, logos
   decisions.md     Every significant choice and its trade-off; open questions
   roadmap.md       Build order and progress
 ```
 
-## Tech stack (planned)
+## Tech stack
 
 | Part | Choice | Why |
 | --- | --- | --- |
-| Game | TypeScript, Canvas 2D, plain DOM, the Glowcatch UI kit | Small bundle, fast load inside Facebook, no engine overhead ([D5](docs/decisions.md#d5-plain-typescript-with-canvas-and-dom-no-game-engine-or-framework)) |
-| Build | Vite, pnpm workspaces | Fast dev server with HTTPS for testing in Facebook's embedded player |
+| Game | TypeScript, Canvas 2D, plain DOM, the Glowcatch UI kit, Instant Games SDK 8.0 | Small bundle, fast load inside Facebook, no engine overhead ([D5](docs/decisions.md#d5-plain-typescript-with-canvas-and-dom-no-game-engine-or-framework), [D11](docs/decisions.md#d11-instant-games-sdk-80-under-zero-permissions)) |
+| Build | Vite 8, pnpm 11 workspaces | Fast dev server with HTTPS for testing in Facebook's embedded player |
 | Backend | Cloudflare Workers + D1 (proposed) | Free, HTTPS, no cold starts, doesn't sleep during review ([D7](docs/decisions.md#d7-host-the-backend-on-cloudflare-workers-with-d1)) |
-| Tests | Vitest | Shared by all three packages |
-| CI | GitHub Actions | Lint, type-check and test on every push |
+| Language | TypeScript 6.0 | 7.0 isn't supported by typescript-eslint yet ([D12](docs/decisions.md#d12-toolchain-versions)) |
+| Tests | Vitest 4.1 | One run across all three packages ([D12](docs/decisions.md#d12-toolchain-versions)) |
+| CI | GitHub Actions | Lint, format, type-check, test and build on pushes to `main` and `development` and on every pull request |
 
 ## Getting started
 
-Setup instructions arrive with the code in Phase 1 of the [roadmap](docs/roadmap.md). You'll need Node.js 20+, pnpm, and for the backend a Cloudflare account. Testing inside Facebook needs a Meta developer account with a role on the app.
+You need Node.js 22.12 or later (`.nvmrc` pins 24) and pnpm 11 (`npm install -g pnpm@11`, or `corepack enable` on Node 24).
+
+```sh
+pnpm install
+pnpm check                                # lint, format check, type-check, test
+pnpm --filter @glowcatch/game dev         # the game on http://localhost:5173
+pnpm --filter @glowcatch/server dev       # the API on http://localhost:8787
+```
+
+In a plain browser tab the game runs with a local stand-in for the Facebook SDK. Testing inside Facebook needs a Meta developer account with a role on the app, and deploying the backend needs a Cloudflare account. Both are covered in [docs/frontend](docs/frontend/) and [docs/backend](docs/backend/).
 
 ## How this was built
 

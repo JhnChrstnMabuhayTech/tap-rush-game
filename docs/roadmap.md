@@ -6,7 +6,7 @@ The build order, chosen to get the riskiest unknowns out of the way first: Faceb
 
 - [ ] Meta developer account and a Facebook app with the Instant Games product
 - [ ] App details filled in (name, category, icon from [design/assets](design/assets/))
-- [ ] A "hello world" bundle (`index.html` + `fbapp-config.json`) that initialises the SDK and starts the game
+- [x] A "hello world" bundle (`index.html` + `fbapp-config.json`) that initialises the SDK and starts the game: `pnpm --filter @glowcatch/game bundle`
 - [ ] Zipped with `index.html` at the root, uploaded under Web Hosting, moved to **Testing** (never Production)
 - [ ] Loads at `facebook.com/gaming/play/<APP_ID>/` on desktop and in the Facebook app on a phone
 - [ ] Reviewers added as **Testers** under App Roles. A staged game only loads for people with a role on the app.
@@ -15,20 +15,20 @@ The build order, chosen to get the riskiest unknowns out of the way first: Faceb
 
 - [x] Public GitHub repository, `development` branch
 - [x] Design system snapshot in [docs/design](design/)
-- [ ] pnpm workspaces: `apps/game`, `apps/server`, `packages/shared`
-- [ ] TypeScript, ESLint, Prettier, Vitest
-- [ ] UI kit vendored into `apps/game`; `tokens.css` generated from `tokens.json`
+- [x] pnpm workspaces: `apps/game`, `apps/server`, `packages/shared`
+- [x] TypeScript, ESLint, Prettier, Vitest
+- [x] UI kit vendored into `apps/game`; `tokens.css` generated from `tokens.json`
 - [ ] Bricolage Grotesque Latin subset (woff2, under 40 KB)
-- [ ] GitHub Actions: lint, type-check, test
+- [x] GitHub Actions: lint, format, type-check, test, build
 
 ## Phase 2: The round, running locally
 
-- [ ] Rules ported to `packages/shared`: curve, phases, combo, bonuses
-- [ ] Deterministic simulation: seeded generator, fixed tick, logical coordinates, tap log
-- [ ] Tests: same seed and taps give the same score; frame rate doesn't change the round
+- [x] Rules ported to `packages/shared`: curve, phases, combo, bonuses
+- [x] Deterministic simulation: seeded generator, fixed tick, logical coordinates, tap log
+- [x] Tests: same seed and taps give the same score; frame rate doesn't change the round
 - [ ] Game loop, `pointerdown` input with multi-touch, hit testing with slop
 - [ ] Screens: title, how to play, countdown, play, paused, game over, leaderboard
-- [ ] FBInstant mock for plain-browser development
+- [x] FBInstant mock for plain-browser development
 
 ## Phase 3: Backend and trust
 
@@ -36,13 +36,15 @@ The build order, chosen to get the riskiest unknowns out of the way first: Faceb
 - [ ] Signature verification (HMAC-SHA256 with the App Secret), with tests
 - [ ] Server-side replay and plausibility checks, with tests for forged, replayed and impossible rounds
 - [ ] Rate limits, CORS for the Instant Games origin
+- [ ] Backend domain on the app's CSP allowlist (SDK 8.0)
 - [ ] Deployed to a public HTTPS URL
 
 ## Phase 4: Facebook integration
 
-- [ ] Real loading progress, `startGameAsync` when the title can render
+- [x] Real loading progress, `startGameAsync` when the title can render
 - [ ] Best score: `localStorage` + `FBInstant.player` data
 - [ ] Share with an image (`renderShareImage` → `shareAsync`)
+- [ ] Leaderboard names and photos through an overlay view ([D11](decisions.md#d11-instant-games-sdk-80-under-zero-permissions))
 - [ ] Pause on `FBInstant.onPause` and `visibilitychange`
 - [ ] Tested through the embedded player with a local HTTPS server
 

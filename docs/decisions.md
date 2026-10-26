@@ -63,7 +63,7 @@ The Glowcatch UI kit is framework-free by design: components are `(props) => HTM
 
 **Status:** Accepted
 
-The server issues a seed with each round. The client sends its tap log, and the server re-runs the round with the shared simulation to compute the score. See [trust-model.md](trust-model.md).
+The server issues a seed with each round. The client sends its tap log, and the server re-runs the round with the shared simulation to compute the score. See [backend/trust-model.md](backend/trust-model.md).
 
 **Cost:** the simulation must be deterministic on every device and on the server: fixed tick, logical coordinates, a full-precision seeded generator, and no engine-dependent maths in game decisions. The kit's demo loop doesn't do this yet, so the rules are ported to `packages/shared` (review notes R4–R8 in [design/README.md](design/README.md#review-notes)).
 
@@ -103,6 +103,56 @@ Day-to-day commits go to `development`; `main` stays as the reviewed, deployable
 
 ---
 
+### D11. Instant Games SDK 8.0, under Zero Permissions
+
+**Status:** Accepted (required by Meta)
+
+Meta moved Instant Games to SDK 8.0, "Network Enabled Zero Permissions" (NEZP). Games that hadn't migrated by 30 September 2026 are no longer reachable on Facebook, so a new game has to start on 8.0. For Glowcatch that means:
+
+- **No names or photos in game code.** `player.getName()` and `getPhoto()` are gone. Meta renders names and photos itself, inside *overlay views*: an iframe built from an XML template and a CSS file in our bundle. The game positions and sizes the iframe and passes it data such as player IDs, ranks and scores, but can't read what it shows.
+- **No names or photos on our server.** Games under NEZP keep player IDs and gameplay data only, and must not try to re-identify players.
+- **Network calls go only to allowed domains,** over HTTPS. The backend's domain has to be on the app's Content Security Policy allowlist.
+- **What stays:** `getSignedPlayerInfoAsync` (now the main way to prove identity to a server), a game-scoped `player.getID()`, `getDataAsync`/`setDataAsync` (best score, D8) and `shareAsync`.
+
+**What changes from the design:** the backend stores player IDs and scores only. The leaderboard's names and photos come from an overlay view fed with player IDs from our API, and the share image drops the player's name. The design system assumed both (review note R9 in [design/README.md](design/README.md#review-notes)).
+
+**Proposed:** draw the whole top-10 list as one overlay view, styled with our tokens in its CSS, rather than one overlay per row (ten iframes). To be proven in Phase 4.
+
+---
+
+### D12. Toolchain versions
+
+**Status:** Accepted
+
+| Tool | Version | Why not the newest |
+| --- | --- | --- |
+| Node.js | 22.12+, 24 in `.nvmrc` | Vite 8 and Wrangler 4 need 22.12; 24 is the current LTS. |
+| pnpm | 11 | It's the newest. Two of its defaults stay on: install scripts only run for packages listed under `allowBuilds` (workerd and esbuild, which Wrangler needs), and releases younger than a day aren't installed (`minimumReleaseAge`), a cheap guard against a compromised publish. |
+| TypeScript | 6.0 | typescript-eslint 8 supports TypeScript below 6.1, so 7.0 would leave linting unsupported. |
+| Vitest | 4.1 | `@cloudflare/vitest-pool-workers`, which runs tests inside the Workers runtime with a real D1, supports Vitest 4.1 only. The server's integration tests need it in Phase 3. |
+| Vite | 8 | It's the newest. |
+
+**Cost:** TypeScript and Vitest are a major version behind. Revisit when typescript-eslint and the Workers pool catch up; nothing in the code depends on the older versions.
+
+---
+
+### D13. How the simulation stays replayable
+
+**Status:** Accepted
+
+The shared simulation follows the kit's reference loop, with these choices:
+
+- **A 10 ms tick.** Every timer is a whole number of milliseconds, a round is 3,000 to 3,600 ticks (cheap to replay on a Worker), and a tap waits at most 10 ms for its tick.
+- **Logical units are the frame's CSS size at round start.** Firefly size already scales with the frame (`min(1.25, shortSide / 390)`), so the round plays the same as the kit's demo at any size. The server records the field size with the round.
+- **mulberry32 for randomness.** It's small, well known and uses integer operations only, which every engine computes identically.
+- **Approximated curves where a decision depends on them.** Drift uses a sine approximated within 0.1%; the visible radius uses life^0.7 sampled at 17 points, within 1.5% for the first 15/16 of a life. Both differences are invisible on screen, and the game will draw each firefly where the simulation puts it.
+- **Spawn timers carry their remainder,** where the kit reset them to 0, and hold rather than build a backlog when the field is full. The cadence stops depending on frame timing.
+- **Kept from the kit:** Frost leaves the bonus pool after two have been *caught*, not spawned, so a missed Frost doesn't use up a freeze; the first firefly arrives at 940 ms rather than 950, because the clock nudges the pace up before it.
+
+**Cost:** changing a rule or a curve changes how existing rounds replay. Every round records `RULES_VERSION`; a change bumps it, and the server either keeps the old version to replay rounds issued under it, or leaves those few in-flight rounds unranked.
+
+---
+
 ## Open questions
 
 | Question | Options | Notes |
@@ -110,3 +160,4 @@ Day-to-day commits go to `development`; `main` stays as the reviewed, deployable
 | Is the leaderboard all-time or nightly? | All-time top 10 · reset every day | The copy "Tonight's brightest" suggests nightly; the brief only asks for a top 10. |
 | Is there a Settings screen? | Small sheet (High contrast, sound, reduced motion, How to play) · sound toggle only | The design references Settings but doesn't specify it. |
 | Should the `dur-life` token be fixed? | Set to 1900 ms · remove it | It conflicts with the pace table (review note R1). |
+| How is the leaderboard drawn under SDK 8.0? | One overlay view for the whole list · an overlay per row · names and photos left out | Names and photos can only come from an overlay view ([D11](#d11-instant-games-sdk-80-under-zero-permissions)). One overlay is lighter; how closely its XML and CSS can match the kit's `Leaderboard` is unproven. |

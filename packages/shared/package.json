@@ -1,0 +1,13 @@
+{
+  "name": "@glowcatch/shared",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Rules and round simulation shared by the game and the server.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  }
+}
