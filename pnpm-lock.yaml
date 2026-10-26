@@ -30,6 +30,8 @@ importers:
         specifier: ^8.72.0
         version: 8.72.0(eslint@10.13.0)(typescript@6.0.3)
 
+  packages/shared: {}
+
 packages:
 
   '@cacheable/memory@2.2.0':
