@@ -111,13 +111,16 @@ The leaderboard is a query on `players` ordered by `best_score` descending, then
 
 Cloudflare Workers with a D1 (SQLite) database. It's free at this scale, served over HTTPS, has no cold start and doesn't go to sleep, which matters because the backend has to stay up through the review. The Facebook App Secret is stored as a Worker secret and never reaches the client bundle or the repo. See [D7](../decisions.md#d7-host-the-backend-on-cloudflare-workers-with-d1).
 
-The Worker runs on its own `workers.dev` hostname. Cloudflare's bot challenges must stay off for it: the game calls it with `fetch`, which can't answer a challenge. Abuse is handled by the API's own checks and rate limits.
+**Live at https://glowcatch-api.glowcatch-server.workers.dev** (try `/health`). The Worker runs on the account's own `workers.dev` hostname, apart from anything else on the account. Cloudflare's bot challenges must stay off for it: the game calls it with `fetch`, which can't answer a challenge. Abuse is handled by the API's own checks and rate limits. Requests, errors and logs are in the Cloudflare dashboard under **Workers & Pages → glowcatch-api**; the data is under **Storage & databases → D1 → glowcatch**.
 
 ## Before it can serve the game
 
-- The D1 database exists (`wrangler d1 create glowcatch`, its ID in `wrangler.jsonc`) and is migrated (`wrangler d1 migrations apply glowcatch --remote`).
-- The Worker's domain must be on the Facebook app's Content Security Policy allowlist; an Instant Game can only call allowed domains, over HTTPS.
-- `APP_SECRET`, the app's App Secret from the App Dashboard, is set with `wrangler secret put APP_SECRET` and never committed.
+- [x] The D1 database exists (`wrangler d1 create glowcatch`, region APAC, its ID in `wrangler.jsonc`) and is migrated (`wrangler d1 migrations apply glowcatch --remote`).
+- [x] The Worker is deployed (`pnpm --filter @glowcatch/server deploy`).
+- [ ] `APP_SECRET`, the app's App Secret from the App Dashboard, is set with `wrangler secret put APP_SECRET` (run in `apps/server`; it prompts for the value) and never committed. Until it's set, every signed request is refused with `401`.
+- [ ] The Worker's domain, `glowcatch-api.glowcatch-server.workers.dev`, is on the Facebook app's allowed domains; an Instant Game under SDK 8.0 can only call allowed domains, over HTTPS.
+
+A new migration is applied to the live database with `pnpm --filter @glowcatch/server exec wrangler d1 migrations apply glowcatch --remote`, before deploying the code that needs it.
 
 ## Running it
 
