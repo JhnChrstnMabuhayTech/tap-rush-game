@@ -1,0 +1,19 @@
+{
+  "name": "@glowcatch/server",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Glowcatch leaderboard API, a Cloudflare Worker.",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@glowcatch/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261019.1",
+    "wrangler": "^4.152.0"
+  }
+}

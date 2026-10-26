@@ -1,3 +1,9 @@
 packages:
   - apps/*
   - packages/*
+
+# pnpm 11 runs no install scripts unless allowed. These two download the
+# native binaries Wrangler needs: the workerd runtime and esbuild.
+allowBuilds:
+  esbuild: true
+  workerd: true
