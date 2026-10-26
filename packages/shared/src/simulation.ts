@@ -402,6 +402,16 @@ export interface ReplayResult {
   ticks: number;
   /** Taps logged after the round ended. The game never records any. */
   lateTaps: number;
+  /** Every catch, in order, with when its firefly appeared: the server's plausibility checks. */
+  catches: CatchTiming[];
+}
+
+export interface CatchTiming {
+  kind: SpawnKind;
+  /** Ticks completed when the firefly appeared, so the first tick it could be tapped. */
+  spawnTick: number;
+  /** Ticks completed when it was caught. Frozen ticks count: the player's clock kept running. */
+  tick: number;
 }
 
 /**
@@ -410,19 +420,27 @@ export interface ReplayResult {
  */
 export function replayRound(config: RoundConfig, taps: readonly Tap[]): ReplayResult {
   const round = new Round(config);
+  const spawnTicks = new Map<number, number>();
+  const catches: CatchTiming[] = [];
   let next = 0;
   while (!round.state.ended) {
     const tick = round.state.tick;
     while (next < taps.length && taps[next]!.tick <= tick) {
       const tap = taps[next++]!;
       if (tap.tick !== tick) throw new RangeError(`Tap ${next - 1} is out of tick order`);
-      round.tap(tap.x, tap.y);
+      const caught = round.tap(tap.x, tap.y);
+      if (caught) {
+        const { id, kind } = caught.firefly;
+        catches.push({ kind, spawnTick: spawnTicks.get(id)!, tick });
+      }
     }
-    round.step();
+    for (const event of round.step()) {
+      if (event.type === 'spawn') spawnTicks.set(event.firefly.id, round.state.tick);
+    }
     if (round.state.tick > MAX_ROUND_TICKS) throw new Error('Round ran past MAX_ROUND_TICKS');
   }
   const { score, caught, topCombo, tick } = round.state;
-  return { score, caught, topCombo, ticks: tick, lateTaps: taps.length - next };
+  return { score, caught, topCombo, ticks: tick, lateTaps: taps.length - next, catches };
 }
 
 function isBonus(kind: SpawnKind): kind is BonusKind {

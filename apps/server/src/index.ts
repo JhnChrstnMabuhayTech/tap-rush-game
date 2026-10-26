@@ -2,8 +2,13 @@ import { RULES_VERSION } from '@glowcatch/shared';
 import type { Env } from './env';
 import { fail, json } from './http';
 import { startRound } from './rounds';
+import { submitScore } from './score';
 
 export type { Env } from './env';
+
+/** /v1/rounds/{roundId}/score, where roundId is a UUID. */
+const SCORE_PATH =
+  /^\/v1\/rounds\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/score$/;
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -15,6 +20,8 @@ export default {
     if (request.method === 'POST' && url.pathname === '/v1/rounds') {
       return startRound(request, env, Date.now());
     }
+    const score = request.method === 'POST' ? SCORE_PATH.exec(url.pathname) : null;
+    if (score) return submitScore(request, env, score[1]!, Date.now());
 
     return fail(404, 'not_found');
   },

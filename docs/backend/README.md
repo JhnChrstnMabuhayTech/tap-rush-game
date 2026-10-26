@@ -15,9 +15,12 @@ apps/server/
     env.ts           The bindings: DB, APP_SECRET, ALLOW_UNSIGNED
     player.ts        Who is playing: Facebook's signed player info, checked with the App Secret
     rounds.ts        POST /v1/rounds
+    score.ts         POST /v1/rounds/{roundId}/score: replay, judge, store, rank
+    plausibility.ts  Human limits for a replayed round: reaction time, tap rate
     http.ts          JSON responses and request bodies
     *.test.ts        Tests, run inside the Workers runtime with a local D1
-    test/            Test setup (an empty, migrated database per test) and a signer for player info
+    test/            Test setup (an empty, migrated database per test), a signer for player
+                     info, and a player that plays real rounds for the replay to check
   vitest.config.ts   The Workers test runner (@cloudflare/vitest-plugin) and the test App Secret
 ```
 
@@ -26,7 +29,7 @@ apps/server/
 | Method and path | Purpose | Status |
 | --- | --- | --- |
 | `POST /v1/rounds` | Verify the player's signature, create a round, return `roundId`, `seed`, `rulesVersion`, `expiresAt`. | Built |
-| `POST /v1/rounds/{roundId}/score` | Verify, replay, store. Returns `status` (`ranked` or `unranked`), the server's `score`, the player's `best` and `rank`. | Planned |
+| `POST /v1/rounds/{roundId}/score` | Verify, replay, store. Returns `status` (`ranked` or `unranked`), the server's `score`, the player's `best` and `rank`. | Built |
 | `GET /v1/leaderboard?player={id}` | Top 10 by best score (player IDs, ranks, scores), plus the player's own row and rank when they're outside it. | Planned |
 | `GET /health` | Liveness check for uptime monitoring; also reports the `rulesVersion` it replays. | Built |
 
@@ -44,6 +47,33 @@ The game asks for a round while the 3-2-1 runs. The body is `{ signature, field 
 The answer is `201` with `{ roundId, seed, rulesVersion, expiresAt }`. The server chooses the seed (32 random bits), and the score has to arrive within 15 minutes (`expiresAt`), which leaves room for pauses and a retry.
 
 A player has at most one open round. Starting a new round closes the last one (`rejected`, reason `superseded`), so nobody can hold several seeds and play only the kindest. The game therefore sends a finished round's score before it asks for the next round.
+
+### `POST /v1/rounds/{roundId}/score`
+
+The game sends the finished round at game over. The body is `{ signature, taps, score }`:
+
+- `signature`: from `getSignedPlayerInfoAsync(roundId)`, so its `request_payload` names this round. A bad or stale signature, or one for another round, gets `401`. A round that doesn't exist, or belongs to another player, gets `404`.
+- `taps`: `Round.taps` as the game logged them, `{ tick, x, y }` in tick order. At most 1,000 taps, ticks from 0 to `MAX_ROUND_TICKS`, coordinates finite. Anything else gets `400`, and the round stays open.
+- `score`: the score the game showed.
+
+The server replays the taps from the round's seed and field with `replayRound` and keeps its own score. The round is **ranked** unless one of these applies, in this order (the reason is stored and logged, never shown to the player):
+
+| Reason | When |
+| --- | --- |
+| `expired` | More than 15 minutes since the round was issued. Not replayed. |
+| `rules_version` | The server's rules changed since the round was issued, so it can't be replayed as played. Not replayed. |
+| `late_taps` | Taps after the round ended, which the game never logs. |
+| `mismatch` | The claimed score isn't the replayed score. The game runs the same simulation, so an honest claim always matches. |
+| `too_fast` | The score arrived sooner after the round was issued than the round takes to play: its ticks × 10 ms, less 1 s. |
+| `reaction`, `tap_rate` | Past a human limit ([trust model](trust-model.md#what-this-doesnt-stop)). |
+
+The answer is `200` with `{ status, score, best, rank }`:
+- `status` is `ranked` or `unranked`. The game says "Score not ranked this round." for `unranked`, whatever the reason.
+- `score` is the server's score, or null if the round wasn't replayed.
+- `best` is the player's best ranked score, which only goes up.
+- `rank` is the player's place by best score, with tied scores sharing a place. It's null while `best` is 0.
+
+A round is decided once. Sending it again, for instance after a lost answer, returns the same answer and changes nothing; so does a round a newer one closed (`unranked`). If two submissions race, only the first result is stored, and only that one can lift the best.
 
 ## Data
 

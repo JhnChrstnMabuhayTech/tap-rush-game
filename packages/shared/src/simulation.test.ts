@@ -284,14 +284,23 @@ describe('replay', () => {
     for (let seed = 1; seed <= 40; seed++) {
       const live = playLive(seed);
       const { score, caught, topCombo, tick } = live.state;
-      expect(replayRound(live.config, live.taps)).toEqual({
-        score,
-        caught,
-        topCombo,
-        ticks: tick,
-        lateTaps: 0,
-      });
+      const { catches, ...replayed } = replayRound(live.config, live.taps);
+      expect(replayed).toEqual({ score, caught, topCombo, ticks: tick, lateTaps: 0 });
+      expect(catches).toHaveLength(caught);
     }
+  });
+
+  it('reports each catch with the tick its firefly appeared and the tick it was caught', () => {
+    const round = new Round(config(3));
+    const spawn = stepUntil(round, isSpawnOf('normal'))!;
+    const spawnTick = round.state.tick;
+    for (let i = 0; i < 25; i++) round.step();
+    const f = round.state.fireflies.find((g) => g.id === spawn.firefly.id)!;
+    round.tap(f.x, f.y);
+
+    expect(replayRound(round.config, round.taps).catches).toEqual([
+      { kind: 'normal', spawnTick, tick: spawnTick + 25 },
+    ]);
   });
 
   it('reproduces rounds on other frame sizes too', () => {

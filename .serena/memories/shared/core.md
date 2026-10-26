@@ -6,7 +6,8 @@ Rules and the round simulation for both apps; everything is exported from `src/i
 - `rules.ts` — port of the kit's rules: `pace`, `difficulty(elapsedSeconds, 30, score)`, `comboFor`, `pointsFor`, `pickBonus(random, frostsCaught)`, tables `CURVE`, `PHASES`, `BONUSES`. Numbers must equal the kit's (`apps/game/scripts/kit-rules.test.ts` enforces it).
 - `random.ts` — `createRandom(seed)` mulberry32; `isSeed` (unsigned 32-bit). Never change the sequence: a test pins the first draws and stored rounds replay from it.
 - `curves.ts` — `wave(turns)` (sine within 0.1%, drift) and `shrink(life)` (life^0.7 sampled at 17 points, visible radius).
-- `simulation.ts` — `Round` (live) and `replayRound(config, taps)` (server). `RoundConfig = { seed, field: { width, height, top } }` in logical units (frame CSS px at round start; `top` = HUD band + safe-area inset).
+- `simulation.ts` — `Round` (live) and `replayRound(config, taps)` (server). `RoundConfig = { seed, field: { width, height, top } }` in logical units (frame CSS px at round start; `top` = HUD band + safe-area inset). `replayRound` returns `{ score, caught, topCombo, ticks, lateTaps, catches }`; `catches` is `CatchTiming[]` (`kind`, `spawnTick` = ticks completed when the firefly appeared, `tick` = when caught; frozen ticks count) for the server's plausibility checks. `Firefly.ageMs` stops during a freeze, so it is not a reaction time.
+- `api.ts` — request/response types the game and server share (type-only export): `StartRoundRequest/Response`, `SubmitScoreRequest` (`signature`, `taps`, claimed `score`), `SubmitScoreResponse` (`status` ranked|unranked, server `score` or null, `best`, `rank` or null), `ApiError`/`ApiErrorCode`.
 
 ## How a round runs
 - `TICK_MS = 10`; `round.step()` advances one tick, takes no time argument, returns events (`spawn`, `catch`, `fade`, `streak-lost`, `phase`, `end`). The client steps however many ticks real time allows per frame.
