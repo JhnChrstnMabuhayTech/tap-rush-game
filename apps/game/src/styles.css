@@ -1,0 +1,13 @@
+/* The page shell. Component styles come from the Glowcatch UI kit. */
+
+html,
+body,
+#app {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
