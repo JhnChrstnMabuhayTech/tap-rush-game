@@ -1,3 +1,4 @@
+import { detectPlatform } from './platform/platform';
 import './styles.css';
 import { kit } from './ui/kit';
 
@@ -14,7 +15,22 @@ const fitFrame = () => root.classList.toggle('gc-letterbox', desktop.matches);
 desktop.addEventListener('change', fitFrame);
 fitFrame();
 
-showTitle();
+boot().catch((error: unknown) => console.error('Glowcatch failed to start', error));
+
+async function boot() {
+  const platform = detectPlatform();
+  await platform.initialize();
+  platform.setLoadingProgress(50);
+
+  // The title animates in its display face, so wait for it, but never for long.
+  await Promise.race([document.fonts.load('800 64px "Bricolage Grotesque"'), delay(1500)]).catch(
+    () => {},
+  );
+  platform.setLoadingProgress(100);
+
+  await platform.start();
+  showTitle();
+}
 
 function showTitle() {
   const field = kit.PlayField({ ambient: true });
@@ -29,4 +45,8 @@ function showTitle() {
 function showRound(title: ReturnType<typeof kit.PlayField>) {
   title.stop();
   root.replaceChildren(kit.PlayField());
+}
+
+function delay(ms: number) {
+  return new Promise<void>((resolve) => setTimeout(resolve, ms));
 }
