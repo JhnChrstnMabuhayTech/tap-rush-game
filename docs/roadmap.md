@@ -34,10 +34,10 @@ The build order, chosen to get the riskiest unknowns out of the way first: Faceb
 
 ## Phase 3: Backend and trust
 
-- [ ] `POST /v1/rounds`, `POST /v1/rounds/{id}/score`, `GET /v1/leaderboard`, `GET /health`
+- [x] `POST /v1/rounds`, `POST /v1/rounds/{id}/score`, `GET /v1/leaderboard`, `GET /health`
 - [x] Signature verification (HMAC-SHA256 with the App Secret), with tests
 - [x] Server-side replay and plausibility checks, with tests for forged, replayed and impossible rounds
-- [ ] Rate limits, CORS for the Instant Games origin
+- [x] Rate limits, and CORS for the game (any origin: [D17](decisions.md#d17-the-api-answers-calls-from-any-origin))
 - [ ] Backend domain on the app's CSP allowlist (SDK 8.0)
 - [ ] Deployed to a public HTTPS URL
 

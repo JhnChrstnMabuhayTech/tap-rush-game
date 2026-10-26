@@ -1,6 +1,6 @@
 # Trust model
 
-> **Status: in progress** (Phase 3 of the [roadmap](../roadmap.md)). Built: the signature check (`apps/server/src/player.ts`), server-issued rounds (`POST /v1/rounds`), and score submission with the replay and plausibility checks (`POST /v1/rounds/{roundId}/score`, `score.ts`, `plausibility.ts`). Next: rate limits.
+> **Status: in progress** (Phase 3 of the [roadmap](../roadmap.md)). Built: the signature check (`apps/server/src/player.ts`), server-issued rounds (`POST /v1/rounds`), score submission with the replay and plausibility checks (`POST /v1/rounds/{roundId}/score`, `score.ts`, `plausibility.ts`), and rate limits. What remains is checking the signature format against a real one from the staged game.
 
 The brief asks for a backend that "only accepts scores it can trust really came from your game." This page says what that means for Glowcatch: what the server checks, what each check stops, and what it can't stop.
 
@@ -39,7 +39,7 @@ The App Secret lives only on the server (a Worker secret). It's never in the gam
 | Editing the game in devtools to send a bigger score | The replay checks every tap against where a firefly actually was at that moment. Taps on empty sky score nothing, so the score can't go above what the round really spawned. |
 | Submitting faster than a real round | The time from issuing the round to receiving the score must be at least the replayed round's length: 30 s of play plus 3 s for each Frost caught, less 1 s of slack. |
 | Forcing a favourable seed | The server chooses the seed. It isn't sent until the round starts, a new round means a new seed, and starting a new round closes the last one. |
-| Flooding the API | Rate limits per player and per IP; at most one open round per player. |
+| Flooding the API | 300 requests a minute per IP; at most 20 rounds started per player in 5 minutes; at most one open round per player. Requests without a valid signature are refused before anything is written. |
 | Faking a display name or photo | Nothing to fake: the server stores only player IDs, and Facebook draws each name and photo from the ID (SDK 8.0, [D11](../decisions.md#d11-instant-games-sdk-80-under-zero-permissions)). |
 
 ## What this doesn't stop

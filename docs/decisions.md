@@ -223,6 +223,22 @@ The switches live in a **Sound** sheet behind a speaker in the title's top-right
 
 ---
 
+### D17. The API answers calls from any origin
+
+**Status:** Accepted
+
+The game runs in a browser on Facebook's domain and calls the API on another, so the API has to allow cross-origin requests (CORS). It allows every origin (`Access-Control-Allow-Origin: *`) rather than only the game's:
+
+- **Origins aren't what it trusts.** Every write carries Facebook's signature, checked with the App Secret ([trust model](backend/trust-model.md)). A page on another site can't get one for a player, and a script outside a browser ignores CORS anyway.
+- **No cookies or other credentials** go with the requests, so another site can't act as one of its visitors.
+- **One less way to break the game.** An allowlist would need the exact origin Facebook serves the game from, confirmed on the staged build. If that origin were wrong or changed, the game's calls would fail while every test passed.
+
+The leaderboard is public either way: player IDs and scores, which the game shows anyway.
+
+**Cost:** another site could show our leaderboard or use up requests. The rate limits bound that: per IP across the API, and per player for starting rounds.
+
+---
+
 ## Open questions
 
 | Question | Options | Notes |
