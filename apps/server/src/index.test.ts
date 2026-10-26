@@ -1,8 +1,7 @@
 import { RULES_VERSION } from '@glowcatch/shared';
+import { env } from 'cloudflare:workers';
 import { describe, expect, it } from 'vitest';
 import worker from './index';
-
-const env = {};
 
 describe('GET /health', () => {
   it('answers ok with the rules version it replays', async () => {
@@ -16,9 +15,14 @@ describe('GET /health', () => {
 
 describe('unknown routes', () => {
   it('answer 404 as JSON', async () => {
-    const res = await worker.fetch(new Request('https://api.test/nope'), env);
-
-    expect(res.status).toBe(404);
-    expect(await res.json()).toEqual({ error: 'not_found' });
+    for (const request of [
+      new Request('https://api.test/nope'),
+      new Request('https://api.test/v1/rounds'),
+      new Request('https://api.test/health', { method: 'POST' }),
+    ]) {
+      const res = await worker.fetch(request, env);
+      expect(res.status).toBe(404);
+      expect(await res.json()).toEqual({ error: 'not_found' });
+    }
   });
 });

@@ -1,7 +1,7 @@
 import { RULES_VERSION } from '@glowcatch/shared';
+import type { Env } from './env';
 
-// Bindings (the D1 database, the App Secret) are added with the API in Phase 3.
-export type Env = Record<string, never>;
+export type { Env } from './env';
 
 export default {
   async fetch(request: Request, _env: Env): Promise<Response> {
