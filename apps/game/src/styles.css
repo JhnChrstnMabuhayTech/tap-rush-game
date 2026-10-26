@@ -299,3 +299,86 @@ body {
     animation: none;
   }
 }
+
+/* Settings: on/off switches built from the tokens (the kit has none). */
+.gc-settings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.gc-settings-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-1);
+}
+
+.gc-switch {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  box-sizing: border-box;
+  width: 100%;
+  min-height: var(--tap-min);
+  padding: 0 var(--space-4);
+  border: 2px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--sky);
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 650;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.gc-switch:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.gc-switch-label {
+  flex: 1;
+}
+
+.gc-switch-state {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-muted);
+}
+
+.gc-switch-track {
+  position: relative;
+  flex: none;
+  box-sizing: border-box;
+  width: 44px;
+  height: 26px;
+  border: 2px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  background: var(--sky-rise);
+  transition: background-color var(--dur-tap) linear;
+}
+
+.gc-switch-track i {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--ink-muted);
+  transition:
+    transform var(--dur-tap) var(--ease-out),
+    background-color var(--dur-tap) linear;
+}
+
+.gc-switch[aria-checked='true'] .gc-switch-track {
+  background: var(--line-strong);
+}
+
+.gc-switch[aria-checked='true'] .gc-switch-track i {
+  transform: translateX(18px);
+  background: var(--ink);
+}

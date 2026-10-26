@@ -207,6 +207,21 @@ Seven badges, one for each score a player reaches in a single round. They give e
 
 ---
 
+### D16. Music and sound effects, switched separately
+
+**Status:** Accepted
+
+One Sound switch used to mute everything. Players often want the effects without the music (or the other way round), so the engine has two buses, each with its own setting, remembered on the device:
+
+- **Music:** the ambience under the round, and music on the title.
+- **Sound effects:** catch chimes, the countdown, the last-seconds ticks and the round's end.
+
+The switches live in a **Sound** sheet behind a speaker in the title's top-right corner, which fills design gap G1 for sound, and in the pause panel. The speaker shows muted when both are off. (It's a speaker, not the kit's settings glyph, which reads as a sun: design review note G7.) Each is a row with the label, its state as a word, and a sliding knob (`role="switch"`): the kit has no switch, so it's built from the tokens, and the state is never colour alone.
+
+**Cost:** two settings instead of one. A player who had muted the old switch keeps both off.
+
+---
+
 ## Open questions
 
 | Question | Options | Notes |
