@@ -14,7 +14,7 @@ Glowcatch is a Facebook Instant Game with its own leaderboard backend. It's an e
 
 | | |
 | --- | --- |
-| **Play** | `https://www.facebook.com/gaming/play/<APP_ID>/` (staged for testing; link added once the app exists) |
+| **Play** | https://www.facebook.com/gaming/play/1377676130860334/ (staged for testing: it loads only for people with a role on the app) |
 | **Backend** | Public HTTPS URL added once deployed |
 | **Design** | [docs/design](docs/design/) |
 
