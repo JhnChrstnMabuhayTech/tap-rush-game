@@ -170,7 +170,7 @@ The design puts the title over the kit's ambient field: three dim fireflies, and
 - **A one-time hint:** "Tap a firefly", if nothing has been touched for 3.5 s.
 - **An eager Play:** after three catches, Play's invitation breathes faster.
 - **The moon:** a low moon balances the Sound toggle.
-- **How to play:** a button under Play opens the design's How to play panel at any time. The design keeps it in Settings after the first round; on the title it sits where a new player looks first.
+- **How to play:** as the design has it, the panel comes up once, before a player's first round. After that, a button under Play opens it at any time. The design keeps it in Settings after the first round; on the title it sits where a new player looks first.
 
 **Why a toy rather than more decoration:** the brief rewards "feels right to play" and creativity. A home screen you can touch makes people curious about the real thing, and it teaches the mechanic in the first second.
 
