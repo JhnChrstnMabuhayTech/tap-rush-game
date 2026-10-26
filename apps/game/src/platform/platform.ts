@@ -9,6 +9,20 @@ export interface Platform {
   setLoadingProgress(percent: number): void;
   /** Hides Facebook's loading screen. Call once the title can render. */
   start(): Promise<void>;
+  /** Facebook's own pause: the player switched apps or tabs. */
+  onPause(callback: () => void): void;
+  /**
+   * Opens the share dialog. Resolves when it closes, whether or not the player
+   * shared: cancelling isn't an error. Rejects only if sharing couldn't open.
+   */
+  share(payload: SharePayload): Promise<void>;
+}
+
+export interface SharePayload {
+  /** A data URL of a PNG. */
+  image: string;
+  text: string;
+  data?: Record<string, unknown>;
 }
 
 export type PlatformKind = 'facebook' | 'local';
