@@ -12,3 +12,4 @@
 - Seeds are local (`crypto.getRandomValues`) until the server issues rounds; scores stay on the device until then.
 - Facebook constraints (SDK 8.0, D11): no `getName`/`getPhoto`; leaderboard names/photos only via overlay views; network only to CSP-allowlisted domains; the kit's `bundle.css` still `@import`s Google Fonts (to replace with a self-hosted woff2, review notes G4/G6); share images carry no player name.
 - Release: `pnpm --filter @glowcatch/game bundle` → zip → App Dashboard → Use cases → Launch an Instant Game → Customize → Web hosting → Upload Version (comment starts with the commit) → Stage for testing. Never Push to production. App ID 1377676130860334.
+- Countdown (`countdown()` in app.ts): the kit's `Countdown` per step, `sound.countdown(step)` (pips climbing D, E, G, then a G strum on "Go!"), a CSS ring on the numeral (`.gc-countdown b::before`, ink; glow burst on "Go!"), and a vibration on "Go!". The clock starts on "Go!".
