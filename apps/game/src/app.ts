@@ -11,7 +11,7 @@ import { createTitleField, type TitleField } from './title/title-field';
 import { kit } from './ui/kit';
 import { settingSwitch } from './ui/switch';
 
-type Screen = 'title' | 'badges' | 'settings' | 'countdown' | 'playing' | 'paused' | 'over';
+type Screen = 'title' | 'badges' | 'sound' | 'countdown' | 'playing' | 'paused' | 'over';
 
 const shareText = (score: number) =>
   `I scored ${score} in 30 seconds of Glowcatch. Can you beat it?`;
@@ -46,14 +46,15 @@ export function startApp(root: HTMLElement, platform: Platform) {
     const menu = kit.TitleScreen({ best: best.get(), onPlay: startRound });
     // Taps pass through the title to the fireflies behind it, except on its controls.
     menu.classList.add('screen', 'is-passthrough');
-    const settings = kit.Button({
-      label: 'Settings',
+    // A speaker, not the kit's settings glyph, which reads as a sun (light/dark mode).
+    const soundButton = kit.Button({
+      label: 'Sound',
       iconOnly: true,
-      icon: 'settings',
-      onClick: openSettings,
+      icon: speakerIcon(sound),
+      onClick: () => openSound(soundButton),
     });
-    settings.classList.add('gc-corner');
-    menu.append(settings);
+    soundButton.classList.add('gc-corner');
+    menu.append(soundButton);
     // Badges sit between Play and Leaderboard.
     const actions = menu.querySelector('.gc-title-actions');
     actions?.insertBefore(badgesButton(best.get(), openBadges), actions.children[1] ?? null);
@@ -73,16 +74,20 @@ export function startApp(root: HTMLElement, platform: Platform) {
     screen = 'title';
   }
 
-  function openSettings() {
+  function openSound(corner: HTMLButtonElement) {
     if (!title || screen !== 'title') return;
-    screen = 'settings';
-    setLayer(title, settingsSheet(sound, closeSettings));
-  }
-
-  function closeSettings() {
-    if (!title || screen !== 'settings') return;
-    setLayer(title, null);
-    screen = 'title';
+    screen = 'sound';
+    setLayer(
+      title,
+      soundSheet(sound, () => {
+        if (!title || screen !== 'sound') return;
+        setLayer(title, null);
+        screen = 'title';
+        // The speaker shows the new state: muted when both are off.
+        corner.querySelector('svg')?.replaceWith(kit.Icon(speakerIcon(sound)));
+        corner.focus();
+      }),
+    );
   }
 
   function startRound() {
@@ -243,7 +248,7 @@ export function startApp(root: HTMLElement, platform: Platform) {
   }
 }
 
-/** Music and Sound effects, each on or off: in Settings and when paused. */
+/** Music and Sound effects, each on or off: in the Sound sheet and when paused. */
 function audioSwitches(sound: Sound): HTMLButtonElement[] {
   return [
     settingSwitch('Music', sound.music, (on) => sound.setMusic(on)),
@@ -251,16 +256,21 @@ function audioSwitches(sound: Sound): HTMLButtonElement[] {
   ];
 }
 
-/** The Settings sheet over the title. Close and Escape close it. */
-function settingsSheet(sound: Sound, onClose: () => void): HTMLElement {
+/** A muted speaker when music and effects are both off; otherwise a speaker playing. */
+function speakerIcon(sound: Sound) {
+  return sound.music || sound.effects ? ('sound-on' as const) : ('sound-off' as const);
+}
+
+/** The Sound sheet over the title. Close and Escape close it. */
+function soundSheet(sound: Sound, onClose: () => void): HTMLElement {
   const panel = document.createElement('div');
   panel.className = 'gc-panel gc-settings';
   panel.setAttribute('role', 'dialog');
-  panel.setAttribute('aria-label', 'Settings');
+  panel.setAttribute('aria-label', 'Sound');
   const head = document.createElement('div');
   head.className = 'gc-settings-head';
   const heading = document.createElement('h2');
-  heading.textContent = 'Settings';
+  heading.textContent = 'Sound';
   const close = kit.Button({ label: 'Close', iconOnly: true, icon: 'close', onClick: onClose });
   head.append(heading, close);
   panel.append(head, ...audioSwitches(sound));
