@@ -38,7 +38,7 @@ Full rules: [docs/design/gameplay.md](docs/design/gameplay.md).
 | Best score kept between sessions | Saved on the device and in the player's Facebook game data, reconciled on launch ([D8](docs/decisions.md#d8-best-score-in-three-places)). |
 | Design matters; rename and theme it | A complete design system: night palette, one typeface, glow instead of shadow, an animated title, a High contrast theme. |
 | Creativity, keeping the core gameplay | Score-driven pace, combos and bonus fireflies on top of an unchanged appear-shrink-tap loop. |
-| A backend that only accepts scores it can trust | Facebook-signed player identity, server-issued rounds, and a server-side replay of every round from its seed ([trust model](docs/trust-model.md)). |
+| A backend that only accepts scores it can trust | Facebook-signed player identity, server-issued rounds, and a server-side replay of every round from its seed ([trust model](docs/backend/trust-model.md)). |
 | Runs on Facebook, staged for testing only | Uploaded to Instant Games Web Hosting and moved to Testing. Never pushed to Production or submitted for review. |
 | Game and backend in one repository | `apps/game`, `apps/server` and `packages/shared` in one pnpm workspace. |
 
@@ -66,7 +66,7 @@ The game and the server import the same rules and round simulation. That's what 
 2. **Which round.** The server issues each round with its own ID and random seed. A score is only accepted for a round the server issued to that player, once, within its time limit.
 3. **What happened.** The client sends its taps, not just a score. The server replays the round from the seed with the same rules code and works out the score itself. A score the replay can't reproduce isn't ranked.
 
-A bot that plays the real game perfectly would still replay correctly; no client-side game can fully stop that. Plausibility checks (reaction time, tap rate) and stored tap logs make it harder and visible. Every threat and check: [docs/trust-model.md](docs/trust-model.md).
+A bot that plays the real game perfectly would still replay correctly; no client-side game can fully stop that. Plausibility checks (reaction time, tap rate) and stored tap logs make it harder and visible. Every threat and check: [docs/backend/trust-model.md](docs/backend/trust-model.md).
 
 ## Repository layout
 
@@ -74,10 +74,11 @@ A bot that plays the real game perfectly would still replay correctly; no client
 apps/game/         Instant Game client (planned)
 apps/server/       Leaderboard backend (planned)
 packages/shared/   Rules and round simulation shared by both (planned)
-docs/
-  design/          Design system snapshot: brand, gameplay, states, components, tokens, logos
+docs/              Start at docs/README.md
   architecture.md  How the parts fit together; a round end to end
-  trust-model.md   What the backend checks, and what it can't stop
+  frontend/        The game: modules, running it locally and inside Facebook, uploading
+  backend/         The server: endpoints, data, hosting, deploying; the trust model
+  design/          Design system snapshot: brand, gameplay, states, components, tokens, logos
   decisions.md     Every significant choice and its trade-off; open questions
   roadmap.md       Build order and progress
 ```

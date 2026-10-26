@@ -63,7 +63,7 @@ The Glowcatch UI kit is framework-free by design: components are `(props) => HTM
 
 **Status:** Accepted
 
-The server issues a seed with each round. The client sends its tap log, and the server re-runs the round with the shared simulation to compute the score. See [trust-model.md](trust-model.md).
+The server issues a seed with each round. The client sends its tap log, and the server re-runs the round with the shared simulation to compute the score. See [backend/trust-model.md](backend/trust-model.md).
 
 **Cost:** the simulation must be deterministic on every device and on the server: fixed tick, logical coordinates, a full-precision seeded generator, and no engine-dependent maths in game decisions. The kit's demo loop doesn't do this yet, so the rules are ported to `packages/shared` (review notes R4–R8 in [design/README.md](design/README.md#review-notes)).
 

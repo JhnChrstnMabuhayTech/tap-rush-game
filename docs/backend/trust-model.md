@@ -1,6 +1,6 @@
 # Trust model
 
-> **Status: draft.** This is the design; the checks are built in Phase 3 of the [roadmap](roadmap.md).
+> **Status: draft.** This is the design; the checks are built in Phase 3 of the [roadmap](../roadmap.md).
 
 The brief asks for a backend that "only accepts scores it can trust really came from your game." This page says what that means for Glowcatch: what the server checks, what each check stops, and what it can't stop.
 
