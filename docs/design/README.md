@@ -33,12 +33,14 @@ These are the gaps and conflicts found when the snapshot was reviewed against th
 | # | Issue | Where | Proposed resolution |
 | --- | --- | --- | --- |
 | R1 | The `dur-life` token says a firefly lives 1600 ms at the start of a round, but the pace table and the kit's `CURVE` say 1900 ms. | tokens.json, gameplay.md | `CURVE` wins (it's what the code runs). Update the token to 1900 ms, or drop it, since lifetime comes from the curve. |
-| R2 | gameplay.md says the rules live in `Glowcatch.CURVE`, but the kit's type definitions don't declare `CURVE` or `PHASES` (the bundle does export them). | gameplay.md, index.d.ts | Moot once the rules move to `packages/shared` (R4). |
+| R2 | gameplay.md says the rules live in `Glowcatch.CURVE`, but the kit's type definitions don't declare `CURVE` or `PHASES` (the bundle does export them). | gameplay.md, index.d.ts | **Resolved:** the rules live in `packages/shared` (R4). |
 | R3 | Frost and Swarm catches score combo points in the kit (`pointsFor`), but the bonus table lists only their effects. | gameplay.md | Document it: every catch except Lantern scores 1 × combo. |
 
 ### The reference loop isn't replayable as written
 
-The `PlayField` demo in the kit is the reference implementation of a round. It's right for feel, but the server can't use it to replay a round:
+The `PlayField` demo in the kit is the reference implementation of a round. It's right for feel, but the server can't use it to replay a round.
+
+**Resolved:** `packages/shared` ports the rules and runs the round as a deterministic simulation, applying each resolution below ([D13](../decisions.md#d13-how-the-simulation-stays-replayable)). A test in `apps/game` fails if the kit's copy of the rules drifts from it.
 
 | # | Issue | Why it matters | Resolution |
 | --- | --- | --- | --- |

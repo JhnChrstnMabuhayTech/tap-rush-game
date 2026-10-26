@@ -23,9 +23,9 @@ The build order, chosen to get the riskiest unknowns out of the way first: Faceb
 
 ## Phase 2: The round, running locally
 
-- [ ] Rules ported to `packages/shared`: curve, phases, combo, bonuses
-- [ ] Deterministic simulation: seeded generator, fixed tick, logical coordinates, tap log
-- [ ] Tests: same seed and taps give the same score; frame rate doesn't change the round
+- [x] Rules ported to `packages/shared`: curve, phases, combo, bonuses
+- [x] Deterministic simulation: seeded generator, fixed tick, logical coordinates, tap log
+- [x] Tests: same seed and taps give the same score; frame rate doesn't change the round
 - [ ] Game loop, `pointerdown` input with multi-touch, hit testing with slop
 - [ ] Screens: title, how to play, countdown, play, paused, game over, leaderboard
 - [x] FBInstant mock for plain-browser development

@@ -136,6 +136,23 @@ Meta moved Instant Games to SDK 8.0, "Network Enabled Zero Permissions" (NEZP). 
 
 ---
 
+### D13. How the simulation stays replayable
+
+**Status:** Accepted
+
+The shared simulation follows the kit's reference loop, with these choices:
+
+- **A 10 ms tick.** Every timer is a whole number of milliseconds, a round is 3,000 to 3,600 ticks (cheap to replay on a Worker), and a tap waits at most 10 ms for its tick.
+- **Logical units are the frame's CSS size at round start.** Firefly size already scales with the frame (`min(1.25, shortSide / 390)`), so the round plays the same as the kit's demo at any size. The server records the field size with the round.
+- **mulberry32 for randomness.** It's small, well known and uses integer operations only, which every engine computes identically.
+- **Approximated curves where a decision depends on them.** Drift uses a sine approximated within 0.1%; the visible radius uses life^0.7 sampled at 17 points, within 1.5% for the first 15/16 of a life. Both differences are invisible on screen, and the game will draw each firefly where the simulation puts it.
+- **Spawn timers carry their remainder,** where the kit reset them to 0, and hold rather than build a backlog when the field is full. The cadence stops depending on frame timing.
+- **Kept from the kit:** Frost leaves the bonus pool after two have been *caught*, not spawned, so a missed Frost doesn't use up a freeze; the first firefly arrives at 940 ms rather than 950, because the clock nudges the pace up before it.
+
+**Cost:** changing a rule or a curve changes how existing rounds replay. Every round records `RULES_VERSION`; a change bumps it, and the server either keeps the old version to replay rounds issued under it, or leaves those few in-flight rounds unranked.
+
+---
+
 ## Open questions
 
 | Question | Options | Notes |
