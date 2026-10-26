@@ -19,6 +19,7 @@ describe('unknown routes', () => {
       new Request('https://api.test/nope'),
       new Request('https://api.test/v1/rounds'),
       new Request('https://api.test/health', { method: 'POST' }),
+      new Request('https://api.test/v1/leaderboard', { method: 'POST' }),
     ]) {
       const res = await worker.fetch(request, env);
       expect(res.status).toBe(404);
