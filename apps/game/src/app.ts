@@ -1,6 +1,7 @@
 // The screen flow from docs/design/states.md: title → countdown → play ⇄ paused
 // → game over → countdown again, or back to the title. One screen at a time.
 
+import { createSound, type Sound } from './audio/sound';
 import type { Platform } from './platform/platform';
 import { createPlay, type Play, type RoundResult } from './round/play';
 import { createBestStore, type BestRecord } from './storage/best';
@@ -13,6 +14,7 @@ const shareText = (score: number) =>
 
 export function startApp(root: HTMLElement, platform: Platform) {
   const best = createBestStore();
+  const sound = createSound();
   let screen: Screen = 'title';
   let title: ReturnType<typeof kit.PlayField> | null = null;
   let play: Play | null = null;
@@ -24,7 +26,13 @@ export function startApp(root: HTMLElement, platform: Platform) {
     if (document.hidden) pause();
   });
   window.addEventListener('keydown', onKey);
-  if (import.meta.env.DEV) Object.assign(window, { glowcatch: { current: () => play } });
+  // Audio may only start inside a gesture; iOS counts touchend and click, not touchstart.
+  for (const type of ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown']) {
+    window.addEventListener(type, () => sound.unlock(), { capture: true, passive: true });
+  }
+  if (import.meta.env.DEV) {
+    Object.assign(window, { glowcatch: { current: () => play, sound } });
+  }
 
   showTitle();
 
@@ -34,13 +42,16 @@ export function startApp(root: HTMLElement, platform: Platform) {
     title = kit.PlayField({ ambient: true });
     const menu = kit.TitleScreen({ best: best.get(), onPlay: startRound });
     menu.classList.add('screen');
+    const toggle = soundToggle(sound, true);
+    toggle.classList.add('gc-corner');
+    menu.append(toggle);
     title.append(menu);
     root.replaceChildren(title);
   }
 
   function startRound() {
     clear();
-    play = createPlay(root, { seed: randomSeed(), onPause: pause, onEnd: showGameOver });
+    play = createPlay(root, { seed: randomSeed(), sound, onPause: pause, onEnd: showGameOver });
     countdown(play);
   }
 
@@ -61,6 +72,7 @@ export function startApp(root: HTMLElement, platform: Platform) {
         element.style.pointerEvents = 'none';
         screen = 'playing';
         current.run();
+        sound.ambience(true);
       }
       countdownTimer = window.setTimeout(next, stepMs);
     };
@@ -73,6 +85,7 @@ export function startApp(root: HTMLElement, platform: Platform) {
     window.clearTimeout(countdownTimer);
     play.frame.querySelector('.gc-countdown')?.remove();
     play.hold();
+    sound.ambience(false);
     screen = 'paused';
 
     const panel = document.createElement('div');
@@ -93,7 +106,7 @@ export function startApp(root: HTMLElement, platform: Platform) {
       block: true,
       onClick: showTitle,
     });
-    panel.append(heading, resumeButton, quit);
+    panel.append(heading, resumeButton, soundToggle(sound, false), quit);
     setLayer(play, panel);
     resumeButton.focus();
   }
@@ -108,7 +121,10 @@ export function startApp(root: HTMLElement, platform: Platform) {
   function showGameOver(result: RoundResult) {
     if (!play) return;
     screen = 'over';
-    renderGameOver(play, result, best.record(result.score));
+    const record = best.record(result.score);
+    sound.ambience(false);
+    sound.roundEnd(record.isNewBest);
+    renderGameOver(play, result, record);
   }
 
   function renderGameOver(current: Play, result: RoundResult, record: BestRecord) {
@@ -165,11 +181,35 @@ export function startApp(root: HTMLElement, platform: Platform) {
 
   function clear() {
     window.clearTimeout(countdownTimer);
+    sound.ambience(false);
     title?.stop();
     title = null;
     play?.destroy();
     play = null;
   }
+}
+
+/**
+ * The Sound toggle: an icon button on the title, a labelled one when paused.
+ * It swaps itself for a fresh button showing the new state.
+ */
+function soundToggle(sound: Sound, iconOnly: boolean): HTMLButtonElement {
+  const button = kit.Button({
+    label: 'Sound',
+    iconOnly,
+    variant: 'ghost',
+    block: !iconOnly,
+    icon: sound.enabled ? 'sound-on' : 'sound-off',
+    pressed: sound.enabled,
+    onClick: () => {
+      sound.setEnabled(!sound.enabled);
+      const next = soundToggle(sound, iconOnly);
+      next.className = button.className;
+      button.replaceWith(next);
+      next.focus();
+    },
+  });
+  return button;
 }
 
 /** Shows `content` over the dimmed field, or clears the layer with null. */

@@ -30,3 +30,10 @@ body {
 .gc-pause h2 {
   margin-bottom: var(--space-3);
 }
+
+/* An icon button pinned to the top-right corner of a screen (the title's Sound). */
+.gc-corner {
+  position: absolute;
+  top: calc(var(--space-4) + env(safe-area-inset-top, 0px));
+  right: var(--space-4);
+}
