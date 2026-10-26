@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { chimeFor, comboUpNotes, noteAbove, PAD_NOTES } from './notes';
+import { chimeFor, comboUpNotes, countdownPip, GO_CHORD, noteAbove, PAD_NOTES } from './notes';
 
 describe('noteAbove', () => {
   it('is G4 at 0 and doubles every octave', () => {
@@ -37,5 +37,18 @@ describe('comboUpNotes', () => {
 describe('PAD_NOTES', () => {
   it('sits well below the chimes', () => {
     expect(Math.max(...PAD_NOTES)).toBeLessThan(chimeFor(1) / 1.5);
+  });
+});
+
+describe('the countdown', () => {
+  it('climbs from 3 to 1', () => {
+    expect(countdownPip(2)).toBeGreaterThan(countdownPip(3));
+    expect(countdownPip(1)).toBeGreaterThan(countdownPip(2));
+  });
+
+  it('lands on G for "Go!", where the last pip left off', () => {
+    expect(GO_CHORD[0]).toBeCloseTo(countdownPip(1), 6);
+    expect(GO_CHORD).toHaveLength(4);
+    expect(GO_CHORD.at(-1)! / GO_CHORD[0]!).toBeCloseTo(2, 6);
   });
 });

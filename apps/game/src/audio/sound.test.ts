@@ -39,6 +39,8 @@ describe('createSound', () => {
       sound.catch(caught);
       sound.tick();
       sound.roundEnd(true);
+      sound.countdown(3);
+      sound.countdown(0);
       sound.ambience(true);
       sound.ambience(false);
     }).not.toThrow();

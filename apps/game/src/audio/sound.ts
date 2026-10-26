@@ -6,7 +6,7 @@
 // call is silent. The mute setting is remembered on the device.
 
 import type { CatchEvent } from '@glowcatch/shared';
-import { chimeFor, comboUpNotes, noteAbove, PAD_NOTES } from './notes';
+import { chimeFor, comboUpNotes, countdownPip, GO_CHORD, noteAbove, PAD_NOTES } from './notes';
 
 const KEY = 'glowcatch.sound';
 const AMBIENT_FADE_IN = 1.5;
@@ -29,6 +29,8 @@ export interface Sound {
   tick(): void;
   /** A soft close to the round, with a sparkle for a new best. */
   roundEnd(isNewBest: boolean): void;
+  /** 3, 2, 1: a pip that climbs each step. 0 is "Go!": a bright strum. */
+  countdown(step: 3 | 2 | 1 | 0): void;
   /** The night ambience under the round: a low pad and crickets. */
   ambience(on: boolean): void;
 }
@@ -136,6 +138,20 @@ export function createSound(
           chime(ctx, effects, noteAbove(semitones), t + 0.5 + i * 0.07, 0.06, 0.8),
         );
       }
+    },
+
+    countdown(step) {
+      if (!graph) return;
+      const { ctx, effects } = graph;
+      const t = ctx.currentTime;
+      if (step === 0) {
+        GO_CHORD.forEach((note, i) => chime(ctx, effects, note, t + i * 0.035, 0.11, 0.9));
+        return;
+      }
+      // A short, rounded pip with a faint click on top, so it reads on phone speakers.
+      const pip = countdownPip(step);
+      voice(ctx, effects, pip, t, { type: 'triangle', gain: 0.13, duration: 0.22 });
+      voice(ctx, effects, pip * 2, t, { gain: 0.03, duration: 0.08 });
     },
 
     ambience(on) {
