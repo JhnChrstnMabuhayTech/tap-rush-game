@@ -7,8 +7,12 @@ export function json(body: unknown, status = 200, headers: Record<string, string
   });
 }
 
-export function fail(status: number, error: ApiErrorCode): Response {
-  return json({ error } satisfies ApiError, status);
+export function fail(
+  status: number,
+  error: ApiErrorCode,
+  headers: Record<string, string> = {},
+): Response {
+  return json({ error } satisfies ApiError, status, headers);
 }
 
 /** The request body parsed as JSON, or undefined if it isn't JSON or is over `maxBytes`. */

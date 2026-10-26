@@ -24,6 +24,17 @@ async function route(request: Request, env: Env): Promise<Response> {
     return json({ ok: true, rulesVersion: RULES_VERSION });
   }
 
+  // Per client IP, across the API. Cloudflare always sets the header in front
+  // of a deployed Worker; local runs and tests have none and skip the check.
+  const ip = request.headers.get('cf-connecting-ip');
+  if (
+    url.pathname.startsWith('/v1/') &&
+    ip &&
+    !(await env.LIMIT_BY_IP.limit({ key: ip })).success
+  ) {
+    return fail(429, 'rate_limited', { 'retry-after': '60' });
+  }
+
   if (request.method === 'GET' && url.pathname === '/v1/leaderboard') {
     return getLeaderboard(url, env);
   }

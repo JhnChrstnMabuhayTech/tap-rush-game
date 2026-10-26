@@ -27,3 +27,30 @@ describe('unknown routes', () => {
     }
   });
 });
+
+describe('requests per IP', () => {
+  const from = (ip: string, path = '/v1/leaderboard') =>
+    worker.fetch(
+      new Request(`https://api.test${path}`, { headers: { 'cf-connecting-ip': ip } }),
+      env,
+    );
+
+  it('are limited across the API, and the limit says when to come back', async () => {
+    // The limiter counts in fixed one-minute windows, so allow for this test
+    // straddling two of them: it then takes up to twice the limit.
+    let allowed = 0;
+    let limited: Response | undefined;
+    while (!limited && allowed <= 600) {
+      const res = await from('203.0.113.7');
+      if (res.status === 429) limited = res;
+      else allowed++;
+    }
+
+    expect(allowed).toBeGreaterThanOrEqual(300);
+    expect(limited?.headers.get('retry-after')).toBe('60');
+    expect(await limited?.json()).toEqual({ error: 'rate_limited' });
+    expect((await from('203.0.113.7', '/v1/rounds')).status).toBe(429);
+    expect((await from('203.0.113.8')).status).toBe(200);
+    expect((await from('203.0.113.7', '/health')).status).toBe(200);
+  });
+});
