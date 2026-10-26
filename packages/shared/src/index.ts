@@ -4,3 +4,5 @@
 
 /** Bumped whenever a rule change would replay an existing round differently. */
 export const RULES_VERSION = 1;
+
+export * from './rules';
