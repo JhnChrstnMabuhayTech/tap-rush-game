@@ -28,6 +28,41 @@ describe('unknown routes', () => {
   });
 });
 
+describe('calls from the game, on another origin', () => {
+  const origin = { origin: 'https://apps-1377676130860334.apps.fbsbx.com' };
+
+  it('answers the preflight before a JSON POST', async () => {
+    const res = await worker.fetch(
+      new Request('https://api.test/v1/rounds', {
+        method: 'OPTIONS',
+        headers: {
+          ...origin,
+          'access-control-request-method': 'POST',
+          'access-control-request-headers': 'content-type',
+        },
+      }),
+      env,
+    );
+
+    expect(res.status).toBe(204);
+    expect(res.headers.get('access-control-allow-origin')).toBe('*');
+    expect(res.headers.get('access-control-allow-methods')).toContain('POST');
+    expect(res.headers.get('access-control-allow-headers')).toContain('content-type');
+  });
+
+  it('lets the game read every answer, errors included', async () => {
+    for (const request of [
+      new Request('https://api.test/health', { headers: origin }),
+      new Request('https://api.test/v1/leaderboard', { headers: origin }),
+      new Request('https://api.test/v1/rounds', { method: 'POST', headers: origin, body: '{}' }),
+      new Request('https://api.test/nope', { headers: origin }),
+    ]) {
+      const res = await worker.fetch(request, env);
+      expect(res.headers.get('access-control-allow-origin'), request.url).toBe('*');
+    }
+  });
+});
+
 describe('requests per IP', () => {
   const from = (ip: string, path = '/v1/leaderboard') =>
     worker.fetch(
@@ -48,6 +83,7 @@ describe('requests per IP', () => {
 
     expect(allowed).toBeGreaterThanOrEqual(300);
     expect(limited?.headers.get('retry-after')).toBe('60');
+    expect(limited?.headers.get('access-control-allow-origin')).toBe('*');
     expect(await limited?.json()).toEqual({ error: 'rate_limited' });
     expect((await from('203.0.113.7', '/v1/rounds')).status).toBe(429);
     expect((await from('203.0.113.8')).status).toBe(200);

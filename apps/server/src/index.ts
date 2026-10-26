@@ -1,6 +1,6 @@
 import { RULES_VERSION } from '@glowcatch/shared';
 import type { Env } from './env';
-import { fail, json } from './http';
+import { CORS_HEADERS, fail, json, withCors } from './http';
 import { getLeaderboard } from './leaderboard';
 import { startRound } from './rounds';
 import { submitScore } from './score';
@@ -13,7 +13,11 @@ const SCORE_PATH =
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    return route(request, env);
+    // The browser's preflight before a JSON POST from the game.
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { status: 204, headers: CORS_HEADERS });
+    }
+    return withCors(await route(request, env));
   },
 } satisfies ExportedHandler<Env>;
 
