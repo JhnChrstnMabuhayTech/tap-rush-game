@@ -8,6 +8,7 @@ import type { Platform } from './platform/platform';
 import { createPlay, type Play, type RoundResult } from './round/play';
 import { createBestStore, type BestRecord } from './storage/best';
 import { createTitleField, type TitleField } from './title/title-field';
+import { durationMs } from './ui/duration';
 import { kit } from './ui/kit';
 
 type Screen = 'title' | 'badges' | 'countdown' | 'playing' | 'paused' | 'over';
@@ -77,7 +78,7 @@ export function startApp(root: HTMLElement, platform: Platform) {
   // second away, so "Go!" fades out before there's anything to catch.
   function countdown(current: Play) {
     screen = 'countdown';
-    const stepMs = parseFloat(kit.token('dur-count')) || 800;
+    const stepMs = durationMs(kit.token('dur-count'), 800);
     const steps = [3, 2, 1, 0] as const;
     let step = 0;
     const next = () => {

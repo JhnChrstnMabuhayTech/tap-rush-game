@@ -7,7 +7,7 @@
 - TypeScript `~6.0` — not 7.x: typescript-eslint 8 supports TS < 6.1.
 - Vitest `^4.1` — not 5.x: `@cloudflare/vitest-pool-workers` (planned for D1 integration tests) supports ^4.1 only.
 - ESLint 10 flat config + typescript-eslint `recommended` + eslint-config-prettier; Prettier 3.
-- Game: Vite 8 (Rolldown), `@vitejs/plugin-basic-ssl` (only in `--mode fb`), `fflate` (release zip). Facebook Instant Games SDK 8.0 is a script tag from `connect.facebook.net`, not an npm package; its types are hand-written in `apps/game/src/platform/fbinstant.ts`.
+- Game: Vite 8 (Rolldown), `@vitejs/plugin-basic-ssl` (only in `--mode fb`), `fflate` (release zip). `build.cssMinify: false` on purpose: the kit reads design tokens at runtime (durations via parseFloat as ms, colours via a 6-hex/rgba parser) and a minifier rewrites them (`800ms`→`.8s`). `scripts/check-build.ts` (run by `build`/`bundle`) fails if any token in dist CSS differs from `src/kit/tokens.css`. Read duration tokens with `durationMs()` (`src/ui/duration.ts`), never bare parseFloat. Facebook Instant Games SDK 8.0 is a script tag from `connect.facebook.net`, not an npm package; its types are hand-written in `apps/game/src/platform/fbinstant.ts`.
 - Server: Wrangler 4, `@cloudflare/workers-types` (via tsconfig `types`), `compatibility_date` in `apps/server/wrangler.jsonc`.
 - Workspace packages are consumed as TypeScript source (`exports` → `./src/index.ts`); there is no package build step. Vite and Wrangler compile them with the app.
 - `tsconfig.base.json`: strict, `noUncheckedIndexedAccess`, `verbatimModuleSyntax`, `moduleResolution: Bundler`, `noEmit`, `types: []` (each package opts into DOM / Workers / Node types).

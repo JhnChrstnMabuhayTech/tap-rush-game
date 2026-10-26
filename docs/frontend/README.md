@@ -65,7 +65,7 @@ All commands run from the repository root.
 | --- | --- |
 | `pnpm --filter @glowcatch/game dev` | Dev server on http://localhost:5173, with the local stand-in for the SDK |
 | `pnpm --filter @glowcatch/game dev:fb` | The same over HTTPS (self-signed), for Facebook's embedded player |
-| `pnpm --filter @glowcatch/game build` | Production build in `apps/game/dist` |
+| `pnpm --filter @glowcatch/game build` | Production build in `apps/game/dist`, then checks every design token survived the build verbatim (the kit reads them at runtime) |
 | `pnpm --filter @glowcatch/game bundle` | Build, then zip it for Web Hosting into `apps/game/release/` |
 | `pnpm --filter @glowcatch/game tokens` | Regenerate `src/kit/tokens.css` after the tokens change |
 
