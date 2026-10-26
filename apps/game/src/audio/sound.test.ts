@@ -60,6 +60,8 @@ describe('createSound', () => {
       sound.countdown(0);
       sound.ambience(true);
       sound.ambience(false);
+      sound.titleMusic(true);
+      sound.titleMusic(false);
       sound.setMusic(false);
       sound.setEffects(false);
     }).not.toThrow();

@@ -38,6 +38,9 @@ export function startApp(root: HTMLElement, platform: Platform) {
   if (import.meta.env.DEV) {
     Object.assign(window, { glowcatch: { current: () => play, title: () => title, sound } });
   }
+  // Try audio straight away: some hosts allow it before a tap. Where the
+  // browser holds it, the context waits, suspended, for the first gesture.
+  sound.unlock();
 
   showTitle();
 
@@ -61,6 +64,7 @@ export function startApp(root: HTMLElement, platform: Platform) {
     actions?.insertBefore(badgesButton(best.get(), openBadges), actions.children[1] ?? null);
     title = createTitleField(root, { sound, onEager: () => menu.classList.add('is-eager') });
     title.frame.append(menu);
+    sound.titleMusic(true);
   }
 
   function openBadges() {
@@ -247,6 +251,7 @@ export function startApp(root: HTMLElement, platform: Platform) {
   function clear() {
     window.clearTimeout(countdownTimer);
     sound.ambience(false);
+    sound.titleMusic(false);
     title?.stop();
     title = null;
     play?.destroy();

@@ -6,6 +6,15 @@
 // call is silent. Music and sound effects can each be switched off, and both
 // settings are remembered on the device.
 
+import {
+  BEAT,
+  BEATS_PER_BAR,
+  BARS_PER_CHORD,
+  chordAt,
+  CHORDS,
+  MELODY_NOTES,
+  nextMelodyNote,
+} from './music';
 import type { CatchEvent } from '@glowcatch/shared';
 import {
   comboUpNotes,
@@ -24,6 +33,10 @@ const EFFECTS_KEY = 'glowcatch.effects';
 const LEGACY_KEY = 'glowcatch.sound';
 const AMBIENT_FADE_IN = 1.5;
 const AMBIENT_FADE_OUT = 0.6;
+const TITLE_MUSIC_FADE_IN = 2.5;
+const TITLE_MUSIC_FADE_OUT = 0.8;
+/** How far ahead the title music is scheduled on the audio clock, in seconds. */
+const LOOKAHEAD = 0.4;
 /** Overall loudness: peaks near half scale, enough for phone speakers; the compressor guards the rest. */
 const MASTER_LEVEL = 1.6;
 
@@ -50,6 +63,8 @@ export interface Sound {
   countdown(step: 3 | 2 | 1 | 0): void;
   /** The night ambience under the round: a low pad and crickets. */
   ambience(on: boolean): void;
+  /** Calm music for the title, generated as it plays. */
+  titleMusic(on: boolean): void;
 }
 
 interface Graph {
@@ -72,6 +87,8 @@ export function createSound(
 ): Sound {
   let musicOn = readSetting(storage, MUSIC_KEY);
   let effectsOn = readSetting(storage, EFFECTS_KEY);
+  let wantTitleMusic = false;
+  let stopTitleMusic: (() => void) | null = null;
   let graph: Graph | null = null;
   let wantAmbience = false;
   let stopAmbience: (() => void) | null = null;
@@ -108,6 +125,7 @@ export function createSound(
       }
       if (graph.ctx.state === 'suspended') void graph.ctx.resume();
       if (wantAmbience && !stopAmbience) stopAmbience = startAmbience(graph);
+      if (wantTitleMusic && !stopTitleMusic) stopTitleMusic = startTitleMusic(graph);
     },
 
     catch(event) {
@@ -194,6 +212,16 @@ export function createSound(
       if (!on && stopAmbience) {
         stopAmbience();
         stopAmbience = null;
+      }
+    },
+
+    titleMusic(on) {
+      wantTitleMusic = on;
+      if (!graph) return;
+      if (on && !stopTitleMusic) stopTitleMusic = startTitleMusic(graph);
+      if (!on && stopTitleMusic) {
+        stopTitleMusic();
+        stopTitleMusic = null;
       }
     },
   };
@@ -336,6 +364,97 @@ function startAmbience({ ctx, ambientBus }: Graph): () => void {
     ambientBus.gain.cancelScheduledValues(now);
     ambientBus.gain.setTargetAtTime(0, now, AMBIENT_FADE_OUT / 3);
     oscillators.forEach((oscillator) => oscillator.stop(now + AMBIENT_FADE_OUT * 2));
+  };
+}
+
+/**
+ * The title's music (see music.ts), into the music bus. Notes are scheduled a
+ * little ahead on the audio clock, so timing holds even when the page is busy.
+ * Returns a function that fades it out.
+ */
+function startTitleMusic({ ctx, music }: Graph): () => void {
+  const bus = ctx.createGain();
+  bus.gain.value = 0;
+  bus.connect(music);
+  bus.gain.setTargetAtTime(1, ctx.currentTime, TITLE_MUSIC_FADE_IN / 3);
+  const warmth = ctx.createBiquadFilter();
+  warmth.type = 'lowpass';
+  warmth.frequency.value = 900;
+  warmth.connect(bus);
+
+  const beatsPerChord = BEATS_PER_BAR * BARS_PER_CHORD;
+  let beat = 0;
+  let next = ctx.currentTime + 0.15;
+  let note = 2;
+  let pad: { gain: GainNode; voices: OscillatorNode[] } | null = null;
+
+  const schedule = () => {
+    while (next < ctx.currentTime + LOOKAHEAD) {
+      const chord = chordAt(beat);
+      if (beat % beatsPerChord === 0) pad = changePad(pad, CHORDS[chord]!, next);
+      // A soft low note on each bar's first beat, an octave above the root so phones can play it.
+      if (beat % BEATS_PER_BAR === 0) {
+        voice(ctx, warmth, noteAbove(CHORDS[chord]![0] + 12), next, {
+          gain: 0.035,
+          duration: BEAT * 3,
+        });
+      }
+      const played = nextMelodyNote(note, beat, Math.random);
+      if (played !== null) {
+        note = played;
+        chime(ctx, bus, noteAbove(MELODY_NOTES[note]!), next, 0.032, 1.8);
+      }
+      beat += 1;
+      next += BEAT;
+    }
+  };
+
+  // The pad crossfades into each new chord over a couple of seconds.
+  const changePad = (
+    previous: { gain: GainNode; voices: OscillatorNode[] } | null,
+    chord: readonly number[],
+    at: number,
+  ) => {
+    if (previous) {
+      previous.gain.gain.setTargetAtTime(0, at, 0.8);
+      previous.voices.forEach((v) => v.stop(at + 4));
+    }
+    const gain = ctx.createGain();
+    gain.gain.value = 0;
+    gain.gain.setTargetAtTime(0.011, at, 0.8);
+    gain.connect(warmth);
+    const voices = chord.map((semitones) => {
+      const oscillator = ctx.createOscillator();
+      oscillator.frequency.value = noteAbove(semitones);
+      oscillator.connect(gain);
+      oscillator.start(at);
+      return oscillator;
+    });
+    return { gain, voices };
+  };
+
+  schedule();
+  const scheduler = window.setInterval(schedule, 100);
+  let cricketTimer = 0;
+  const chirpLater = () => {
+    cricketTimer = window.setTimeout(
+      () => {
+        cricket(ctx, bus, ctx.currentTime);
+        chirpLater();
+      },
+      900 + Math.random() * 2600,
+    );
+  };
+  chirpLater();
+
+  return () => {
+    window.clearInterval(scheduler);
+    window.clearTimeout(cricketTimer);
+    const now = ctx.currentTime;
+    bus.gain.cancelScheduledValues(now);
+    bus.gain.setTargetAtTime(0, now, TITLE_MUSIC_FADE_OUT / 3);
+    pad?.voices.forEach((v) => v.stop(now + TITLE_MUSIC_FADE_OUT * 3));
+    window.setTimeout(() => bus.disconnect(), TITLE_MUSIC_FADE_OUT * 3000 + 200);
   };
 }
 

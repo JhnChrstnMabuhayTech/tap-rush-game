@@ -60,6 +60,7 @@ The build order, chosen to get the riskiest unknowns out of the way first: Faceb
 - [x] An interactive title: catchable fireflies and bonus visitors
 - [x] Achievement badges for scores reached, with a collection and progress to the next
 - [x] Sound settings: Music and Sound effects switched separately
+- [x] Calm generated music on the title
 - [ ] High contrast theme and reduced motion
 - [ ] Share card checked on Facebook's crops
 
