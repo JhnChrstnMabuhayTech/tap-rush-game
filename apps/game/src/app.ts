@@ -68,11 +68,13 @@ export function startApp(root: HTMLElement, platform: Platform) {
       const value = steps[step++]!;
       const element = kit.Countdown({ value, hint: value === 3 ? 'Get ready' : undefined });
       current.frame.append(element);
+      sound.countdown(value);
       if (value === 0) {
         element.style.pointerEvents = 'none';
         screen = 'playing';
         current.run();
         sound.ambience(true);
+        navigator.vibrate?.(12);
       }
       countdownTimer = window.setTimeout(next, stepMs);
     };
