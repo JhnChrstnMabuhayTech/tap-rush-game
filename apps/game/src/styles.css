@@ -75,3 +75,165 @@ body {
     transform: translate(-50%, -80%);
   }
 }
+
+/* Badges: the collection sheet. */
+.gc-badges {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-height: 100%;
+  overflow: hidden;
+}
+
+.gc-badges-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.gc-badges-head p {
+  margin: 2px 0 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ink-muted);
+}
+
+.gc-badges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  gap: var(--space-2);
+  margin: 0;
+  padding: 2px;
+  list-style: none;
+  overflow-y: auto;
+}
+
+.gc-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-1);
+  border-radius: var(--radius-sm);
+  background: var(--sky);
+  text-align: center;
+}
+
+.gc-badge b {
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.gc-badge span {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ink-muted);
+}
+
+.gc-badge.is-locked b {
+  color: var(--ink-muted);
+}
+
+/* The next badge to aim for. */
+.gc-badge.is-next {
+  outline: 2px solid var(--line-strong);
+  outline-offset: -2px;
+}
+
+/* Badges on game over: a new one earned, or how far to the next. */
+.gc-unlock {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--lime-soft);
+  text-align: left;
+}
+
+.gc-unlock canvas {
+  flex: none;
+  animation: gc-badge-pop 600ms var(--ease-pop) 300ms both;
+}
+
+.gc-unlock .gc-label {
+  display: block;
+  color: var(--lime);
+}
+
+.gc-unlock b {
+  display: block;
+  font-size: 18px;
+  line-height: 24px;
+  color: var(--ink);
+}
+
+.gc-unlock-detail {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ink-muted);
+}
+
+.gc-next {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.gc-next-label {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ink-muted);
+}
+
+.gc-next-label p {
+  margin: 0;
+}
+
+.gc-next-label b {
+  color: var(--ink);
+}
+
+.gc-next-bar {
+  display: block;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--sky-rise);
+  overflow: hidden;
+}
+
+.gc-next-bar i {
+  display: block;
+  height: 100%;
+  background: var(--lime);
+  transform-origin: left center;
+}
+
+/* A taller game-over sheet still fits short screens. */
+.gc-layer > .gc-over {
+  max-height: 100%;
+  overflow-y: auto;
+}
+
+@keyframes gc-badge-pop {
+  0% {
+    transform: scale(0.4) rotate(-14deg);
+    opacity: 0;
+  }
+  100% {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gc-unlock canvas {
+    animation: none;
+  }
+}
