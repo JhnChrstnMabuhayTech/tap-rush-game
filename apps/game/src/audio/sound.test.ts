@@ -21,15 +21,32 @@ const caught = {
 } as CatchEvent;
 
 describe('createSound', () => {
-  it('is on by default', () => {
-    expect(createSound(memory()).enabled).toBe(true);
+  it('has music and sound effects on by default', () => {
+    const sound = createSound(memory());
+    expect([sound.music, sound.effects]).toEqual([true, true]);
   });
 
-  it('remembers being muted', () => {
+  it('remembers music and sound effects separately', () => {
     const storage = memory();
-    createSound(storage).setEnabled(false);
-    expect(storage.data.get('glowcatch.sound')).toBe('off');
-    expect(createSound(storage).enabled).toBe(false);
+    createSound(storage).setMusic(false);
+    expect(storage.data.get('glowcatch.music')).toBe('off');
+    let sound = createSound(storage);
+    expect([sound.music, sound.effects]).toEqual([false, true]);
+
+    sound.setEffects(false);
+    sound.setMusic(true);
+    sound = createSound(storage);
+    expect([sound.music, sound.effects]).toEqual([true, false]);
+  });
+
+  it('keeps both off for a player who muted the old single Sound switch', () => {
+    const sound = createSound(memory({ 'glowcatch.sound': 'off' }));
+    expect([sound.music, sound.effects]).toEqual([false, false]);
+  });
+
+  it('lets a new setting override the old switch', () => {
+    const sound = createSound(memory({ 'glowcatch.sound': 'off', 'glowcatch.music': 'on' }));
+    expect([sound.music, sound.effects]).toEqual([true, false]);
   });
 
   it('stays silent and harmless before the first gesture', () => {
@@ -43,6 +60,8 @@ describe('createSound', () => {
       sound.countdown(0);
       sound.ambience(true);
       sound.ambience(false);
+      sound.setMusic(false);
+      sound.setEffects(false);
     }).not.toThrow();
   });
 

@@ -3,12 +3,16 @@
 //
 // Browsers only allow audio after the player touches the page, so no audio
 // node exists until unlock() runs inside a user gesture; until then every
-// call is silent. The mute setting is remembered on the device.
+// call is silent. Music and sound effects can each be switched off, and both
+// settings are remembered on the device.
 
 import type { CatchEvent } from '@glowcatch/shared';
 import { chimeFor, comboUpNotes, countdownPip, GO_CHORD, noteAbove, PAD_NOTES } from './notes';
 
-const KEY = 'glowcatch.sound';
+const MUSIC_KEY = 'glowcatch.music';
+const EFFECTS_KEY = 'glowcatch.effects';
+/** Before music and effects were separate, one Sound switch muted both. */
+const LEGACY_KEY = 'glowcatch.sound';
 const AMBIENT_FADE_IN = 1.5;
 const AMBIENT_FADE_OUT = 0.6;
 /** Overall loudness: peaks near half scale, enough for phone speakers; the compressor guards the rest. */
@@ -17,10 +21,14 @@ const MASTER_LEVEL = 1.6;
 type Store = Pick<Storage, 'getItem' | 'setItem'>;
 
 export interface Sound {
-  readonly enabled: boolean;
+  /** The ambience under the round, and the title's music. */
+  readonly music: boolean;
+  /** Chimes, ticks, the countdown and the round's end. */
+  readonly effects: boolean;
   /** 'locked' until the first gesture, then the AudioContext's own state. */
   readonly state: AudioContextState | 'locked';
-  setEnabled(on: boolean): void;
+  setMusic(on: boolean): void;
+  setEffects(on: boolean): void;
   /** Call from every user gesture: creates or resumes audio when the browser allows it. */
   unlock(): void;
   /** The catch chime: it climbs with the streak; bonuses and new multipliers add to it. */
@@ -37,8 +45,11 @@ export interface Sound {
 
 interface Graph {
   ctx: AudioContext;
-  master: GainNode;
+  /** Everything effects play into; muted when effects are off. */
   effects: GainNode;
+  /** The music bus; muted when music is off. Music sources feed it. */
+  music: GainNode;
+  /** The round's ambience, faded in and out, into the music bus. */
   ambientBus: GainNode;
 }
 
@@ -50,35 +61,40 @@ export function createSound(
   storage: Store | null = deviceStorage(),
   createContext: () => AudioContext | null = browserContext,
 ): Sound {
-  let enabled = readEnabled(storage);
+  let musicOn = readSetting(storage, MUSIC_KEY);
+  let effectsOn = readSetting(storage, EFFECTS_KEY);
   let graph: Graph | null = null;
   let wantAmbience = false;
   let stopAmbience: (() => void) | null = null;
 
   const sound: Sound = {
-    get enabled() {
-      return enabled;
+    get music() {
+      return musicOn;
+    },
+    get effects() {
+      return effectsOn;
     },
     get state() {
       return graph ? graph.ctx.state : 'locked';
     },
 
-    setEnabled(on) {
-      enabled = on;
-      try {
-        storage?.setItem(KEY, on ? 'on' : 'off');
-      } catch {
-        // Not remembered, but still applied for this session.
-      }
-      if (graph)
-        graph.master.gain.setTargetAtTime(on ? MASTER_LEVEL : 0, graph.ctx.currentTime, 0.05);
+    setMusic(on) {
+      musicOn = on;
+      writeSetting(storage, MUSIC_KEY, on);
+      if (graph) fade(graph.ctx, graph.music, on ? 1 : 0);
+    },
+
+    setEffects(on) {
+      effectsOn = on;
+      writeSetting(storage, EFFECTS_KEY, on);
+      if (graph) fade(graph.ctx, graph.effects, on ? 1 : 0);
     },
 
     unlock() {
       if (!graph) {
         const ctx = createContext();
         if (!ctx) return;
-        graph = buildGraph(ctx, enabled);
+        graph = buildGraph(ctx, musicOn, effectsOn);
       }
       if (graph.ctx.state === 'suspended') void graph.ctx.resume();
       if (wantAmbience && !stopAmbience) stopAmbience = startAmbience(graph);
@@ -174,10 +190,10 @@ function browserContext(): AudioContext | null {
   return AudioContextClass ? new AudioContextClass() : null;
 }
 
-function buildGraph(ctx: AudioContext, enabled: boolean): Graph {
+function buildGraph(ctx: AudioContext, musicOn: boolean, effectsOn: boolean): Graph {
   // master → compressor (rapid catches never clip) → speakers
   const master = ctx.createGain();
-  master.gain.value = enabled ? MASTER_LEVEL : 0;
+  master.gain.value = MASTER_LEVEL;
   const compressor = ctx.createDynamicsCompressor();
   compressor.threshold.value = -12;
   master.connect(compressor).connect(ctx.destination);
@@ -190,15 +206,26 @@ function buildGraph(ctx: AudioContext, enabled: boolean): Graph {
   reverb.connect(wet).connect(master);
 
   const effects = ctx.createGain();
+  effects.gain.value = effectsOn ? 1 : 0;
   effects.connect(master);
   effects.connect(reverb);
 
+  const music = ctx.createGain();
+  music.gain.value = musicOn ? 1 : 0;
+  music.connect(master);
+  music.connect(reverb);
+
   const ambientBus = ctx.createGain();
   ambientBus.gain.value = 0;
-  ambientBus.connect(master);
-  ambientBus.connect(reverb);
+  ambientBus.connect(music);
 
-  return { ctx, master, effects, ambientBus };
+  return { ctx, effects, music, ambientBus };
+}
+
+/** A short glide to a new level, so switching never clicks. */
+function fade(ctx: AudioContext, node: GainNode, level: number) {
+  node.gain.cancelScheduledValues(ctx.currentTime);
+  node.gain.setTargetAtTime(level, ctx.currentTime, 0.05);
 }
 
 /** A bell-like chime: the note, a soft octave, and a brief inharmonic glint. */
@@ -317,11 +344,22 @@ function impulse(ctx: AudioContext, seconds: number, decay: number) {
   return buffer;
 }
 
-function readEnabled(storage: Store | null): boolean {
+/** On unless switched off. A player who muted the old single switch keeps both off. */
+function readSetting(storage: Store | null, key: string): boolean {
   try {
-    return storage?.getItem(KEY) !== 'off';
+    const value = storage?.getItem(key);
+    if (value === 'on' || value === 'off') return value === 'on';
+    return storage?.getItem(LEGACY_KEY) !== 'off';
   } catch {
     return true;
+  }
+}
+
+function writeSetting(storage: Store | null, key: string, on: boolean) {
+  try {
+    storage?.setItem(key, on ? 'on' : 'off');
+  } catch {
+    // Not remembered, but still applied for this session.
   }
 }
 
