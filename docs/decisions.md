@@ -159,6 +159,24 @@ The shared simulation follows the kit's reference loop, with these choices:
 
 ---
 
+### D14. A title you can play with
+
+**Status:** Accepted
+
+The design puts the title over the kit's ambient field: three dim fireflies, and nothing to do but press Play. On a phone that left the top half of the screen as empty sky, and the first staged build felt plain. The title now has its own field (`apps/game/src/title`):
+
+- **Catchable fireflies:** three to five glow above the name and can be caught, with the same burst and chime as a round. A streak warms the horizon, so the combo is felt before it's explained.
+- **Bonus visitors:** a Lantern, a Frost and a Swarm visit in turn, and catching one names it with the How to play copy. The title teaches the bonuses without a tutorial screen.
+- **A one-time hint:** "Tap a firefly", if nothing has been touched for 3.5 s.
+- **An eager Play:** after three catches, Play's invitation breathes faster.
+- **The moon:** a low moon balances the Sound toggle.
+
+**Why a toy rather than more decoration:** the brief rewards "feels right to play" and creativity. A home screen you can touch makes people curious about the real thing, and it teaches the mechanic in the first second.
+
+**Cost:** the title no longer follows the design system's TitleScreen guidance (review note R10), and it's another canvas loop to keep light. Nothing on the title is scored or sent anywhere.
+
+---
+
 ## Open questions
 
 | Question | Options | Notes |
