@@ -119,7 +119,7 @@ Meta moved Instant Games to SDK 8.0, "Network Enabled Zero Permissions" (NEZP). 
 
 - **No names or photos in game code.** `player.getName()` and `getPhoto()` are gone. Meta renders names and photos itself, inside *overlay views*: an iframe built from an XML template and a CSS file in our bundle. The game positions and sizes the iframe and passes it data such as player IDs, ranks and scores, but can't read what it shows.
 - **No names or photos on our server.** Games under NEZP keep player IDs and gameplay data only, and must not try to re-identify players.
-- **Network calls go only to allowed domains,** over HTTPS. The backend's domain has to be on the app's Content Security Policy allowlist.
+- **Network calls go only to allowed domains,** over HTTPS. The backend's domain has to be on the app's Content Security Policy allowlist, which Meta only offers to apps in a business portfolio.
 - **What stays:** `getSignedPlayerInfoAsync` (now the main way to prove identity to a server), a game-scoped `player.getID()`, `getDataAsync`/`setDataAsync` (best score, D8) and `shareAsync`.
 
 **What changes from the design:** the backend stores player IDs and scores only. The leaderboard's names and photos come from an overlay view fed with player IDs from our API, and the share image drops the player's name. The design system assumed both (review note R9 in [design/README.md](design/README.md#review-notes)).

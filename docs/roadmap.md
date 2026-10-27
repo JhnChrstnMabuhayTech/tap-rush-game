@@ -38,7 +38,7 @@ The build order, chosen to get the riskiest unknowns out of the way first: Faceb
 - [x] Signature verification (HMAC-SHA256 with the App Secret), with tests
 - [x] Server-side replay and plausibility checks, with tests for forged, replayed and impossible rounds
 - [x] Rate limits, and CORS for the game (any origin: [D17](decisions.md#d17-the-api-answers-calls-from-any-origin))
-- [ ] Backend domain on the app's CSP allowlist (SDK 8.0)
+- [x] Backend domain on the app's CSP allowlist (SDK 8.0)
 - [x] Deployed to a public HTTPS URL: https://glowcatch-api.glowcatch-server.workers.dev
 
 ## Phase 4: Facebook integration
