@@ -2,6 +2,8 @@
 
 export interface Env {
   DB: D1Database;
+  /** Requests to /v1 per client IP (wrangler.jsonc). */
+  LIMIT_BY_IP: RateLimit;
   /** The Facebook app's App Secret, which keys the player signatures. */
   APP_SECRET: string;
   /**

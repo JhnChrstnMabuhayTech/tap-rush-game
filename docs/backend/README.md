@@ -8,16 +8,17 @@
 
 ```
 apps/server/
-  wrangler.jsonc     Worker config: name, entry point, compatibility date, the D1 binding
+  wrangler.jsonc     Worker config: name, entry point, compatibility date, the D1 binding, the per-IP rate limit
   migrations/        The D1 schema, applied in order (0001_init.sql: players, rounds)
   src/
-    index.ts         The fetch handler and its routes
-    env.ts           The bindings: DB, APP_SECRET, ALLOW_UNSIGNED
+    index.ts         The fetch handler: CORS, the per-IP limit, the routes
+    env.ts           The bindings: DB, LIMIT_BY_IP, APP_SECRET, ALLOW_UNSIGNED
     player.ts        Who is playing: Facebook's signed player info, checked with the App Secret
     rounds.ts        POST /v1/rounds
     score.ts         POST /v1/rounds/{roundId}/score: replay, judge, store, rank
     plausibility.ts  Human limits for a replayed round: reaction time, tap rate
-    http.ts          JSON responses and request bodies
+    leaderboard.ts   GET /v1/leaderboard
+    http.ts          JSON responses, request bodies, CORS headers
     *.test.ts        Tests, run inside the Workers runtime with a local D1
     test/            Test setup (an empty, migrated database per test), a signer for player
                      info, and a player that plays real rounds for the replay to check
@@ -30,12 +31,23 @@ apps/server/
 | --- | --- | --- |
 | `POST /v1/rounds` | Verify the player's signature, create a round, return `roundId`, `seed`, `rulesVersion`, `expiresAt`. | Built |
 | `POST /v1/rounds/{roundId}/score` | Verify, replay, store. Returns `status` (`ranked` or `unranked`), the server's `score`, the player's `best` and `rank`. | Built |
-| `GET /v1/leaderboard?player={id}` | Top 10 by best score (player IDs, ranks, scores), plus the player's own row and rank when they're outside it. | Planned |
+| `GET /v1/leaderboard?player={id}` | Top 10 by best score (player IDs, ranks, scores), plus the player's own row and rank. | Built |
 | `GET /health` | Liveness check for uptime monitoring; also reports the `rulesVersion` it replays. | Built |
 
 Every response that the player sees maps to a state in [design/states.md](../design/states.md). A rejected score is reported as `unranked`, never as an accusation.
 
-Errors are a status code and `{ "error": code }`: `bad_request` (400), `unauthorized` (401) or `not_found` (404).
+Errors are a status code and `{ "error": code }`: `bad_request` (400), `unauthorized` (401), `not_found` (404) or `rate_limited` (429, with `Retry-After` in seconds).
+
+### Calling it from the game
+
+The game calls the API from Facebook's domain, so every answer, errors included, carries `Access-Control-Allow-Origin: *`, and `OPTIONS` answers the browser's preflight before a JSON `POST`. Any origin is allowed because the API trusts Facebook's signature on each request, not where the request comes from, and it uses no cookies ([D17](../decisions.md#d17-the-api-answers-calls-from-any-origin)).
+
+### Rate limits
+
+- **Per IP:** 300 requests a minute across `/v1` (Cloudflare's rate-limit binding `LIMIT_BY_IP`, counted per Cloudflare location). It's generous because players on one mobile network can share an IP; it's there to stop floods. `/health` isn't limited. Local runs and tests have no client IP and skip it.
+- **Per player:** at most 20 rounds started in 5 minutes, counted in D1. A full round takes over 30 seconds, so more means a script, or quitting again and again to fish for an easy seed.
+
+Either limit answers `429 rate_limited` with `Retry-After: 60`.
 
 ### `POST /v1/rounds`
 
@@ -75,6 +87,15 @@ The answer is `200` with `{ status, score, best, rank }`:
 
 A round is decided once. Sending it again, for instance after a lost answer, returns the same answer and changes nothing; so does a round a newer one closed (`unranked`). If two submissions race, only the first result is stored, and only that one can lift the best.
 
+### `GET /v1/leaderboard?player={playerId}`
+
+The answer is `200` with `{ top, player }` (`LeaderboardResponse`), never cached:
+
+- `top`: up to 10 rows of `{ rank, playerId, score }`, best score first. Tied scores share a place and the next place skips (1, 2, 2, 4); among a tie, whoever reached the score first lists first. Players without a best (0) aren't listed.
+- `player`: the row for `player`, if given and if they have a best, whether or not they're in `top`. The game pins it under the top 10 when it's outside.
+
+`player` is optional and unverified: the leaderboard is public, and the row says nothing the top 10 doesn't. A value that can't be a player ID gets `400`. The leaderboard is all-time; nightly (the design's "Tonight's brightest") is an open question in the [decisions log](../decisions.md#open-questions).
+
 ## Data
 
 The schema is [`apps/server/migrations/0001_init.sql`](../../apps/server/migrations/0001_init.sql). Times are milliseconds since the epoch.
@@ -90,13 +111,16 @@ The leaderboard is a query on `players` ordered by `best_score` descending, then
 
 Cloudflare Workers with a D1 (SQLite) database. It's free at this scale, served over HTTPS, has no cold start and doesn't go to sleep, which matters because the backend has to stay up through the review. The Facebook App Secret is stored as a Worker secret and never reaches the client bundle or the repo. See [D7](../decisions.md#d7-host-the-backend-on-cloudflare-workers-with-d1).
 
-The Worker runs on its own `workers.dev` hostname. Cloudflare's bot challenges must stay off for it: the game calls it with `fetch`, which can't answer a challenge. Abuse is handled by the API's own checks and rate limits.
+**Live at https://glowcatch-api.glowcatch-server.workers.dev** (try `/health`). The Worker runs on the account's own `workers.dev` hostname, apart from anything else on the account. Cloudflare's bot challenges must stay off for it: the game calls it with `fetch`, which can't answer a challenge. Abuse is handled by the API's own checks and rate limits. Requests, errors and logs are in the Cloudflare dashboard under **Workers & Pages → glowcatch-api**; the data is under **Storage & databases → D1 → glowcatch**.
 
 ## Before it can serve the game
 
-- The D1 database exists (`wrangler d1 create glowcatch`, its ID in `wrangler.jsonc`) and is migrated (`wrangler d1 migrations apply glowcatch --remote`).
-- The Worker's domain must be on the Facebook app's Content Security Policy allowlist; an Instant Game can only call allowed domains, over HTTPS.
-- `APP_SECRET`, the app's App Secret from the App Dashboard, is set with `wrangler secret put APP_SECRET` and never committed.
+- [x] The D1 database exists (`wrangler d1 create glowcatch`, region APAC, its ID in `wrangler.jsonc`) and is migrated (`wrangler d1 migrations apply glowcatch --remote`).
+- [x] The Worker is deployed (`pnpm --filter @glowcatch/server deploy`).
+- [x] `APP_SECRET`, the app's App Secret from the App Dashboard, is set with `wrangler secret put APP_SECRET` (run in `apps/server`, or pass `--name glowcatch-api`; it prompts for the value) and never committed. Without it, every signed request is refused with `401`.
+- [x] The Worker's domain, `glowcatch-api.glowcatch-server.workers.dev`, is on the Facebook app's allowed domains, with **Connections** (`connect-src`) ticked and nothing else; an Instant Game under SDK 8.0 can only call allowed domains, over HTTPS. The list is the App Dashboard's **Content Security Policy configuration**, which only appears once the app belongs to a business portfolio (Meta Business Suite → Settings → Accounts → Apps → Connect an app ID). It's shared by every Instant Game in that portfolio. To check it, open the staged game, right-click the game and choose **Inspect** so the Console runs in the game's frame (not `top`, which is Facebook's page and has its own policy), then `fetch` `/health`.
+
+A new migration is applied to the live database with `pnpm --filter @glowcatch/server exec wrangler d1 migrations apply glowcatch --remote`, before deploying the code that needs it.
 
 ## Running it
 

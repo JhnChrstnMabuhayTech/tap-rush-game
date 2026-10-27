@@ -119,7 +119,7 @@ Meta moved Instant Games to SDK 8.0, "Network Enabled Zero Permissions" (NEZP). 
 
 - **No names or photos in game code.** `player.getName()` and `getPhoto()` are gone. Meta renders names and photos itself, inside *overlay views*: an iframe built from an XML template and a CSS file in our bundle. The game positions and sizes the iframe and passes it data such as player IDs, ranks and scores, but can't read what it shows.
 - **No names or photos on our server.** Games under NEZP keep player IDs and gameplay data only, and must not try to re-identify players.
-- **Network calls go only to allowed domains,** over HTTPS. The backend's domain has to be on the app's Content Security Policy allowlist.
+- **Network calls go only to allowed domains,** over HTTPS. The backend's domain has to be on the app's Content Security Policy allowlist, which Meta only offers to apps in a business portfolio.
 - **What stays:** `getSignedPlayerInfoAsync` (now the main way to prove identity to a server), a game-scoped `player.getID()`, `getDataAsync`/`setDataAsync` (best score, D8) and `shareAsync`.
 
 **What changes from the design:** the backend stores player IDs and scores only. The leaderboard's names and photos come from an overlay view fed with player IDs from our API, and the share image drops the player's name. The design system assumed both (review note R9 in [design/README.md](design/README.md#review-notes)).
@@ -220,6 +220,22 @@ One Sound switch used to mute everything. Players often want the effects without
 The switches live in a **Sound** sheet behind a speaker in the title's top-right corner, which fills design gap G1 for sound, and in the pause panel. The speaker shows muted when both are off. (It's a speaker, not the kit's settings glyph, which reads as a sun: design review note G7.) Each is a row with the label, its state as a word, and a sliding knob (`role="switch"`): the kit has no switch, so it's built from the tokens, and the state is never colour alone.
 
 **Cost:** two settings instead of one. A player who had muted the old switch keeps both off.
+
+---
+
+### D17. The API answers calls from any origin
+
+**Status:** Accepted
+
+The game runs in a browser on Facebook's domain and calls the API on another, so the API has to allow cross-origin requests (CORS). It allows every origin (`Access-Control-Allow-Origin: *`) rather than only the game's:
+
+- **Origins aren't what it trusts.** Every write carries Facebook's signature, checked with the App Secret ([trust model](backend/trust-model.md)). A page on another site can't get one for a player, and a script outside a browser ignores CORS anyway.
+- **No cookies or other credentials** go with the requests, so another site can't act as one of its visitors.
+- **One less way to break the game.** An allowlist would need the exact origin Facebook serves the game from, confirmed on the staged build. If that origin were wrong or changed, the game's calls would fail while every test passed.
+
+The leaderboard is public either way: player IDs and scores, which the game shows anyway.
+
+**Cost:** another site could show our leaderboard or use up requests. The rate limits bound that: per IP across the API, and per player for starting rounds.
 
 ---
 

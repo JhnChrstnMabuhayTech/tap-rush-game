@@ -18,6 +18,12 @@ export const ROUND_TTL_MS = 15 * 60_000;
 export const FIELD_MIN = 100;
 export const FIELD_MAX = 4096;
 const MAX_BODY_BYTES = 4096;
+/**
+ * Rounds a player may start in a few minutes. A full round takes over 30 s, so
+ * more means a script, or quitting again and again to fish for an easy seed.
+ */
+export const ROUND_STARTS_ALLOWED = 20;
+export const ROUND_STARTS_WINDOW_MS = 5 * 60_000;
 
 export async function startRound(request: Request, env: Env, now: number): Promise<Response> {
   const body = await readJson(request, MAX_BODY_BYTES);
@@ -29,6 +35,16 @@ export async function startRound(request: Request, env: Env, now: number): Promi
   }
 
   const playerId = check.player.id;
+  const recent = await env.DB.prepare(
+    'SELECT COUNT(*) AS n FROM rounds WHERE player_id = ?1 AND issued_at > ?2',
+  )
+    .bind(playerId, now - ROUND_STARTS_WINDOW_MS)
+    .first<number>('n');
+  if ((recent ?? 0) >= ROUND_STARTS_ALLOWED) {
+    console.warn('start round: rate limited', playerId);
+    return fail(429, 'rate_limited', { 'retry-after': '60' });
+  }
+
   const round: StartRoundResponse = {
     roundId: crypto.randomUUID(),
     seed: crypto.getRandomValues(new Uint32Array(1))[0]!,

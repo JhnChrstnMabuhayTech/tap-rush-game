@@ -12,6 +12,8 @@ export const SIGNATURE_MAX_AGE_MS = 5 * 60_000;
 const CLOCK_SKEW_MS = 60_000;
 /** Facebook's player IDs are digits; local development uses words. */
 const PLAYER_ID = /^[\w-]{1,64}$/;
+
+export const isPlayerId = (value: string): boolean => PLAYER_ID.test(value);
 /** The signature part of an unsigned request, for local development only. */
 export const UNSIGNED = 'unsigned';
 

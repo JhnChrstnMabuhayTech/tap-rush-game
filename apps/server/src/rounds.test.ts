@@ -2,7 +2,7 @@ import { RULES_VERSION, SEED_MAX, type StartRoundResponse } from '@glowcatch/sha
 import { env } from 'cloudflare:workers';
 import { describe, expect, it } from 'vitest';
 import worker, { type Env } from './index';
-import { ROUND_TTL_MS } from './rounds';
+import { ROUND_STARTS_ALLOWED, ROUND_STARTS_WINDOW_MS, ROUND_TTL_MS, startRound } from './rounds';
 import { encodePlayerInfo, playerInfo, signPlayerInfo } from './test/sign';
 
 const field = { width: 390, height: 844, top: 96 };
@@ -86,6 +86,30 @@ describe('POST /v1/rounds', () => {
     expect(await count('players')).toBe(1);
   });
 
+  it('limits how many rounds a player can start in five minutes', async () => {
+    const now = Date.now();
+    const startAt = async (playerId: string, at: number) => {
+      const signature = await signPlayerInfo(playerInfo(playerId, null, at));
+      const request = new Request('https://api.test/v1/rounds', {
+        method: 'POST',
+        body: JSON.stringify({ signature, field }),
+      });
+      return startRound(request, env, at);
+    };
+    for (let i = 0; i < ROUND_STARTS_ALLOWED; i++) {
+      expect((await startAt('101', now + i * 1000)).status).toBe(201);
+    }
+
+    const limited = await startAt('101', now + 30_000);
+    expect(limited.status).toBe(429);
+    expect(limited.headers.get('retry-after')).toBe('60');
+    expect(await limited.json()).toEqual({ error: 'rate_limited' });
+    expect(await count('rounds')).toBe(ROUND_STARTS_ALLOWED);
+
+    expect((await startAt('202', now + 30_000)).status).toBe(201);
+    expect((await startAt('101', now + ROUND_STARTS_WINDOW_MS + 1000)).status).toBe(201);
+  });
+
   it("leaves other players' rounds open", async () => {
     const theirs = await start('202');
     await start('101');
@@ -112,11 +136,7 @@ describe('POST /v1/rounds', () => {
     const res = await post(
       JSON.stringify({ signature: unsigned, field }),
       'http://localhost:8787/v1/rounds',
-      {
-        DB: env.DB,
-        APP_SECRET: env.APP_SECRET,
-        ALLOW_UNSIGNED: 'true',
-      },
+      { ...env, ALLOW_UNSIGNED: 'true' },
     );
 
     expect(res.status).toBe(201);
